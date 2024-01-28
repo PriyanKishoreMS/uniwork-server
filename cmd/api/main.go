@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
 
-	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
 
@@ -25,23 +25,23 @@ func main() {
 	flag.Parse()
 	log.SetHeader("${time_rfc3339} ${level}")
 
-	dbType := PSQLDB{}
+	dbType := MySQLDB{}
 	db, err := dbType.Open(cfg)
 	if err != nil {
 		log.Fatal("error in opening db", err)
 	}
+	defer db.Close()
 
 	log.Info("Database connection established")
-	dbname := db.Migrator().CurrentDatabase()
-	log.Info("dbname: ", dbname)
 
 	app := &application{
 		config: cfg,
 	}
-
-	e := echo.New()
+	e := app.routes()
+	e.Server.ReadHeaderTimeout = time.Second * 10
+	e.Server.WriteTimeout = time.Second * 20
+	e.Server.IdleTimeout = time.Minute
 	e.HideBanner = true
-	app.routes(e)
 
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", app.config.port)))
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", cfg.port)))
 }

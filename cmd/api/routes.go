@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type wrap map[string]interface{}
@@ -19,6 +20,11 @@ func (app *application) HealthCheckHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, data)
 }
 
-func (app *application) routes(e *echo.Echo) {
+func (app *application) routes() *echo.Echo {
+	e := echo.New()
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
 	e.GET("/", app.HealthCheckHandler)
+	return e
 }

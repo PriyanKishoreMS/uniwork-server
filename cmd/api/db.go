@@ -1,17 +1,19 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/jackc/pgx/stdlib"
 	_ "github.com/joho/godotenv/autoload"
-	"gorm.io/driver/mysql"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 type Database interface {
-	Open(config) (*gorm.DB, error)
+	Open(config) (*sql.DB, error)
 }
 
 type MySQLDB struct {
@@ -30,7 +32,7 @@ type PSQLDB struct {
 	host     string
 }
 
-func (m MySQLDB) Open(cfg config) (*gorm.DB, error) {
+func (m MySQLDB) Open(cfg config) (*sql.DB, error) {
 	c := MySQLDB{
 		database: os.Getenv("RDB_DBNAME"),
 		username: os.Getenv("RDB_USERNAME"),
@@ -40,7 +42,14 @@ func (m MySQLDB) Open(cfg config) (*gorm.DB, error) {
 	}
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", c.username, c.pwd, c.host, c.port, c.database)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	err = db.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +57,9 @@ func (m MySQLDB) Open(cfg config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func (m PSQLDB) Open(cfg config) (*gorm.DB, error) {
+func (m PSQLDB) Open(cfg config) (*sql.DB, error) {
 	c := PSQLDB{
-		database: os.Getenv("DB_DBNAME"),
+		database: os.Getenv("DB_DATABASE"),
 		username: os.Getenv("DB_USERNAME"),
 		pwd:      os.Getenv("DB_PASSWORD"),
 		port:     os.Getenv("DB_PORT"),
@@ -58,7 +67,14 @@ func (m PSQLDB) Open(cfg config) (*gorm.DB, error) {
 	}
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", c.host, c.username, c.pwd, c.database, c.port)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := sql.Open("pgx", dsn)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	err = db.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}
