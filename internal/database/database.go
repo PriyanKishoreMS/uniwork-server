@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"context"
@@ -10,10 +10,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/jackc/pgx/stdlib"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/labstack/gommon/log"
 )
 
 type Database interface {
-	Open(config) (*sql.DB, error)
+	Open() (*sql.DB, error)
 }
 
 type MySQLDB struct {
@@ -32,13 +33,13 @@ type PSQLDB struct {
 	host     string
 }
 
-func (m MySQLDB) Open(cfg config) (*sql.DB, error) {
+func (m MySQLDB) Open() (*sql.DB, error) {
 	c := MySQLDB{
-		database: os.Getenv("RDB_DBNAME"),
-		username: os.Getenv("RDB_USERNAME"),
-		pwd:      os.Getenv("RDB_PASSWORD"),
-		port:     os.Getenv("RDB_PORT"),
-		host:     os.Getenv("RDB_HOST"),
+		database: os.Getenv("DB_DBNAME"),
+		username: os.Getenv("DB_USERNAME"),
+		pwd:      os.Getenv("DB_PASSWORD"),
+		port:     os.Getenv("DB_PORT"),
+		host:     os.Getenv("DB_HOST"),
 	}
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", c.username, c.pwd, c.host, c.port, c.database)
@@ -54,10 +55,17 @@ func (m MySQLDB) Open(cfg config) (*sql.DB, error) {
 		return nil, err
 	}
 
+	var dbName string
+	err = db.QueryRow("SELECT DATABASE();").Scan(&dbName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Infof("Connected to database: %s\n", dbName)
+
 	return db, nil
 }
 
-func (m PSQLDB) Open(cfg config) (*sql.DB, error) {
+func (m PSQLDB) Open() (*sql.DB, error) {
 	c := PSQLDB{
 		database: os.Getenv("DB_DATABASE"),
 		username: os.Getenv("DB_USERNAME"),
@@ -78,6 +86,13 @@ func (m PSQLDB) Open(cfg config) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	var dbName string
+	err = db.QueryRow("SELECT current_database()").Scan(&dbName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Infof("Connected to database: %s\n", dbName)
 
 	return db, nil
 }

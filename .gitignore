@@ -1,3 +1,5 @@
 .env
 tmp/
 go.sum
+idea.txt
+dsn.txt
