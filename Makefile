@@ -10,8 +10,11 @@ run:
 watch:
 	@air
 
-up:
-	@docker compose up
+mysql:
+	@docker compose up mysql
+
+psql:
+	@docker compose up psql
 
 down:
 	@docker compose down	

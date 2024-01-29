@@ -1,0 +1,26 @@
+@host = http://localhost:3000
+
+get {{host}}
+
+###
+post {{host}}/college
+Content-Type: application/json
+
+{
+    "name": "danda Universiy",
+    "domain": "danda.ac.in"
+}
+
+###
+get {{host}}/college/8
+
+###
+patch {{host}}/college/8
+Content-Type: application/json
+
+{
+    "domain": "randa.ac.in"
+}
+
+###
+delete {{host}}/college/10

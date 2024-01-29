@@ -1,4 +1,4 @@
-package database
+package main
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 )
 
 type Database interface {
-	Open() (*sql.DB, error)
+	Open(Config) (*sql.DB, error)
 }
 
 type MySQLDB struct {
@@ -33,7 +33,7 @@ type PSQLDB struct {
 	host     string
 }
 
-func (m MySQLDB) Open() (*sql.DB, error) {
+func (m MySQLDB) Open(cfg Config) (*sql.DB, error) {
 	c := MySQLDB{
 		database: os.Getenv("DB_DBNAME"),
 		username: os.Getenv("DB_USERNAME"),
@@ -60,12 +60,12 @@ func (m MySQLDB) Open() (*sql.DB, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Infof("Connected to database: %s\n", dbName)
+	log.Infof("Database connection Established\nConnected to database: %s\n", dbName)
 
 	return db, nil
 }
 
-func (m PSQLDB) Open() (*sql.DB, error) {
+func (m PSQLDB) Open(cfg Config) (*sql.DB, error) {
 	c := PSQLDB{
 		database: os.Getenv("DB_DATABASE"),
 		username: os.Getenv("DB_USERNAME"),

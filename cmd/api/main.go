@@ -7,7 +7,6 @@ import (
 
 	"github.com/labstack/gommon/log"
 	"github.com/priyankishorems/uniwork-server/internal/data"
-	"github.com/priyankishorems/uniwork-server/internal/database"
 )
 
 type Config struct {
@@ -28,14 +27,12 @@ func main() {
 	flag.Parse()
 	log.SetHeader("${time_rfc3339} ${level}")
 
-	dbType := database.MySQLDB{}
-	db, err := dbType.Open()
+	dbType := MySQLDB{}
+	db, err := dbType.Open(cfg)
 	if err != nil {
 		log.Fatal("error in opening db", err)
 	}
 	defer db.Close()
-
-	log.Info("Database connection established")
 
 	app := &application{
 		config: cfg,
@@ -47,5 +44,6 @@ func main() {
 	e.Server.IdleTimeout = time.Minute
 	e.HideBanner = true
 
+	log.Info("Server starting on port: ", cfg.port)
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", cfg.port)))
 }
