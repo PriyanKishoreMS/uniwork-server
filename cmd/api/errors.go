@@ -39,7 +39,7 @@ func (app *application) MethodNotFound(c echo.Context) {
 }
 
 func (app *application) NotFoundResponse(c echo.Context) {
-	message := "the request is no found"
+	message := "the request is not found"
 	app.resposeError(c, http.StatusNotFound, message)
 }
 
@@ -59,6 +59,10 @@ func (app *application) ValidationError(c echo.Context, err error) {
 			errMsg = "is required"
 		case "email":
 			errMsg = fmt.Sprint(e.Field(), " must be a type of email")
+		case "gte":
+			errMsg = "value must be greater than 0"
+		case "lte":
+			errMsg = "value must be lesser than the given value"
 
 		default:
 			errMsg = fmt.Sprintf("Validation error on %s: %s", e.Field(), e.Tag())

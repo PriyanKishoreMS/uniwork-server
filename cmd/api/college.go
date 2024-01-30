@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/priyankishorems/uniwork-server/internal/data"
-	"github.com/priyankishorems/uniwork-server/internal/helpers"
 )
 
 type envelope map[string]interface{}
@@ -16,8 +16,8 @@ type envelope map[string]interface{}
 func (app *application) createCollegeHandler(c echo.Context) error {
 	clg := new(data.College)
 
-	if err := c.Bind(&clg); err != nil {
-		app.InternalServerError(c, err)
+	if err := app.readJSON(c, &clg); err != nil {
+		app.BadRequest(c, err)
 		return err
 	}
 
@@ -39,7 +39,7 @@ func (app *application) createCollegeHandler(c echo.Context) error {
 }
 
 func (app *application) getCollegeHandler(c echo.Context) error {
-	id, err := helpers.ParamToInt64(c, "id")
+	id, err := ReadIntParam(c, "id")
 	if err != nil {
 		app.NotFoundResponse(c)
 		return err
@@ -47,7 +47,7 @@ func (app *application) getCollegeHandler(c echo.Context) error {
 
 	res, err := app.models.Colleges.Get(id)
 	if err != nil {
-		app.InternalServerError(c, err)
+		app.BadRequest(c, err)
 		return err
 	}
 
@@ -56,7 +56,7 @@ func (app *application) getCollegeHandler(c echo.Context) error {
 }
 
 func (app *application) updateCollegeHandler(c echo.Context) error {
-	id, err := helpers.ParamToInt64(c, "id")
+	id, err := ReadIntParam(c, "id")
 	if err != nil {
 		app.NotFoundResponse(c)
 		return err
@@ -64,7 +64,7 @@ func (app *application) updateCollegeHandler(c echo.Context) error {
 
 	college, err := app.models.Colleges.Get(id)
 	if err != nil {
-		app.InternalServerError(c, err)
+		app.BadRequest(c, err)
 		return err
 	}
 
@@ -72,11 +72,12 @@ func (app *application) updateCollegeHandler(c echo.Context) error {
 
 	var input struct {
 		Name   *string `json:"name"`
-		Domain *string `json:"domain"`
+		Domain *string `json:"domain" validate:"email"`
 	}
 
-	if err := c.Bind(&input); err != nil {
-		app.InternalServerError(c, err)
+	err = app.readJSON(c, &input)
+	if err != nil {
+		app.BadRequest(c, err)
 		return err
 	}
 
@@ -86,6 +87,12 @@ func (app *application) updateCollegeHandler(c echo.Context) error {
 
 	if input.Domain != nil {
 		college.Domain = *input.Domain
+	}
+
+	err = app.validate.Struct(college)
+	if err != nil {
+		app.ValidationError(c, err)
+		return err
 	}
 
 	res, err := app.models.Colleges.Update(college)
@@ -105,7 +112,7 @@ func (app *application) updateCollegeHandler(c echo.Context) error {
 }
 
 func (app *application) deleteCollegeHandler(c echo.Context) error {
-	id, err := helpers.ParamToInt64(c, "id")
+	id, err := ReadIntParam(c, "id")
 	if err != nil {
 		app.NotFoundResponse(c)
 		return err
@@ -120,4 +127,39 @@ func (app *application) deleteCollegeHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": fmt.Sprint(res, " row deleted successfully"),
 	})
+}
+
+func (app *application) listAllCollegesHandler(c echo.Context) error {
+	var input struct {
+		Name string
+		data.Filters
+	}
+
+	qs := c.Request().URL.Query()
+	input.Name = app.readStringQuery(qs, "name", "")
+	input.Filters.Page = app.readIntQuery(qs, "page", 1)
+	input.Filters.PageSize = app.readIntQuery(qs, "page_size", 10)
+	input.Filters.Sort = app.readStringQuery(qs, "sort", "id")
+
+	input.Filters.SortSafelist = []string{"id", "name", "-id", "-name"}
+
+	err := app.validate.Struct(input)
+	if err != nil {
+		app.ValidationError(c, err)
+		return err
+	}
+
+	if !slices.Contains(input.Filters.SortSafelist, input.Filters.Sort) {
+		err := errors.New("unsafe query parameter")
+		app.BadRequest(c, err)
+		return err
+	}
+
+	res, err := app.models.Colleges.GetAll(input.Name, input.Filters)
+	if err != nil {
+		app.BadRequest(c, err)
+		return err
+	}
+
+	return c.JSON(http.StatusOK, envelope{"data": res})
 }

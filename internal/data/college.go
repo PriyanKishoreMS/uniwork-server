@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -132,4 +133,47 @@ func (c CollegeModel) Delete(id int64) (int64, error) {
 	}
 
 	return rowsAffected, nil
+}
+
+func (c CollegeModel) GetAll(name string, filters Filters) ([]*College, error) {
+	query := fmt.Sprint(`
+	SELECT id, name, domain, version
+	FROM colleges
+	WHERE LOWER(name) LIKE LOWER(CONCAT('%', ? ,'%'))
+	ORDER BY ` + filters.sortColumn() + " " + filters.sortDirection() + ", id ASC")
+
+	ctx, cancel := handlectx()
+	defer cancel()
+
+	rows, err := c.DB.QueryContext(ctx, query, name)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	colleges := []*College{}
+
+	for rows.Next() {
+		var college College
+
+		err := rows.Scan(
+			&college.ID,
+			&college.Name,
+			&college.Domain,
+			&college.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		colleges = append(colleges, &college)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return colleges, nil
+
 }

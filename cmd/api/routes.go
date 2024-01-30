@@ -24,6 +24,8 @@ func (app *application) routes() *echo.Echo {
 	e.Use(middleware.Recover())
 
 	e.GET("/", app.HealthCheckHandler)
+
+	e.GET("/college", app.listAllCollegesHandler)
 	e.POST("/college", app.createCollegeHandler)
 	e.GET("/college/:id", app.getCollegeHandler)
 	e.PATCH("/college/:id", app.updateCollegeHandler)

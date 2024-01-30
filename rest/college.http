@@ -7,18 +7,19 @@ post {{host}}/college
 Content-Type: application/json
 
 {
-    "domain": "frreedudestudent"
+    "name": "dope",
+    "domain": "kdom@student.ac.in"
 }
 
 ###
-get {{host}}/college/14
+get {{host}}/college?name=h&sort=-id
 
 ###
-patch {{host}}/college/8
+patch {{host}}/college/6
 Content-Type: application/json
 
 {
-    "domain": "randa.ac.in"
+    "domain": "kcgtech@student.ac.in"
 }
 
 ###
