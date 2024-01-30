@@ -21,6 +21,12 @@ func (app *application) createCollegeHandler(c echo.Context) error {
 		return err
 	}
 
+	err := app.validate.Struct(clg)
+	if err != nil {
+		app.ValidationError(c, err)
+		return err
+	}
+
 	res, err := app.models.Colleges.Create(clg)
 	if err != nil {
 		app.InternalServerError(c, err)
@@ -86,14 +92,14 @@ func (app *application) updateCollegeHandler(c echo.Context) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrEditConflict):
-			app.editConflictResponse(c)
+			app.EditConflictResponse(c)
 		default:
 			app.InternalServerError(c, err)
 		}
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": fmt.Sprint(res, " row updated successfully"),
 	})
 }
@@ -111,7 +117,7 @@ func (app *application) deleteCollegeHandler(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": fmt.Sprint(res, " row deleted successfully"),
 	})
 }

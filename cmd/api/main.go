@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/gommon/log"
 	"github.com/priyankishorems/uniwork-server/internal/data"
 )
@@ -15,9 +16,12 @@ type Config struct {
 }
 
 type application struct {
-	config Config
-	models data.Models
+	config   Config
+	models   data.Models
+	validate validator.Validate
 }
+
+var validate validator.Validate
 
 func main() {
 	cfg := Config{}
@@ -34,9 +38,12 @@ func main() {
 	}
 	defer db.Close()
 
+	validate = *validator.New()
+
 	app := &application{
-		config: cfg,
-		models: data.NewModel(db),
+		config:   cfg,
+		models:   data.NewModel(db),
+		validate: validate,
 	}
 	e := app.routes()
 	e.Server.ReadHeaderTimeout = time.Second * 10

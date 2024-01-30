@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
@@ -41,7 +43,28 @@ func (app *application) NotFoundResponse(c echo.Context) {
 	app.resposeError(c, http.StatusNotFound, message)
 }
 
-func (app *application) editConflictResponse(c echo.Context) {
+func (app *application) EditConflictResponse(c echo.Context) {
 	message := "unable to update the record due to edit conflict, please try again"
 	app.resposeError(c, http.StatusConflict, message)
+}
+
+func (app *application) ValidationError(c echo.Context, err error) {
+	validationError := make(map[string]interface{})
+	validErrs := err.(validator.ValidationErrors)
+	for _, e := range validErrs {
+		var errMsg string
+
+		switch e.Tag() {
+		case "required":
+			errMsg = "is required"
+		case "email":
+			errMsg = fmt.Sprint(e.Field(), " must be a type of email")
+
+		default:
+			errMsg = fmt.Sprintf("Validation error on %s: %s", e.Field(), e.Tag())
+		}
+
+		validationError[e.Field()] = errMsg
+	}
+	app.resposeError(c, http.StatusUnprocessableEntity, validationError)
 }

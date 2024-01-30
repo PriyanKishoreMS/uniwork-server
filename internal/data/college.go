@@ -9,8 +9,8 @@ import (
 
 type College struct {
 	ID      int64  `json:"id"`
-	Name    string `json:"name"`
-	Domain  string `json:"domain"`
+	Name    string `json:"name" validate:"required"`
+	Domain  string `json:"domain" validate:"required,email"`
 	Version string `json:"version"`
 }
 

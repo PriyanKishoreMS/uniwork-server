@@ -7,12 +7,10 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-type wrap map[string]interface{}
-
 func (app *application) HealthCheckHandler(c echo.Context) error {
-	data := wrap{
+	data := envelope{
 		"status": "available",
-		"system_info": wrap{
+		"system_info": envelope{
 			"environment": app.config.env,
 			"port":        app.config.port,
 		},

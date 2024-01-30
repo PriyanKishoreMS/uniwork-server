@@ -7,12 +7,11 @@ post {{host}}/college
 Content-Type: application/json
 
 {
-    "name": "danda Universiy",
-    "domain": "danda.ac.in"
+    "domain": "frreedudestudent"
 }
 
 ###
-get {{host}}/college/8
+get {{host}}/college/14
 
 ###
 patch {{host}}/college/8
@@ -23,4 +22,4 @@ Content-Type: application/json
 }
 
 ###
-delete {{host}}/college/10
+delete {{host}}/college/14
