@@ -155,11 +155,11 @@ func (app *application) listAllCollegesHandler(c echo.Context) error {
 		return err
 	}
 
-	res, err := app.models.Colleges.GetAll(input.Name, input.Filters)
+	res, metadata, err := app.models.Colleges.GetAll(input.Name, input.Filters)
 	if err != nil {
 		app.BadRequest(c, err)
 		return err
 	}
 
-	return c.JSON(http.StatusOK, envelope{"data": res})
+	return c.JSON(http.StatusOK, envelope{"metadata": metadata, "data": res})
 }

@@ -135,45 +135,54 @@ func (c CollegeModel) Delete(id int64) (int64, error) {
 	return rowsAffected, nil
 }
 
-func (c CollegeModel) GetAll(name string, filters Filters) ([]*College, error) {
+func (c CollegeModel) GetAll(name string, filters Filters) ([]*College, Metadata, error) {
 	query := fmt.Sprint(`
-	SELECT id, name, domain, version
+	SELECT (
+		SELECT COUNT(*) FROM colleges	
+		WHERE LOWER(name) LIKE LOWER(CONCAT('%', ? ,'%'))
+		) AS total_colleges,
+	id, name, domain, version
 	FROM colleges
 	WHERE LOWER(name) LIKE LOWER(CONCAT('%', ? ,'%'))
-	ORDER BY ` + filters.sortColumn() + " " + filters.sortDirection() + ", id ASC")
+	ORDER BY ` + filters.sortColumn() + " " + filters.sortDirection() + `, id ASC
+	LIMIT ? OFFSET ?;
+	`)
 
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	rows, err := c.DB.QueryContext(ctx, query, name)
+	rows, err := c.DB.QueryContext(ctx, query, name, name, filters.limit(), filters.offset())
 	if err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
 	defer rows.Close()
 
+	totalRecords := 0
 	colleges := []*College{}
 
 	for rows.Next() {
 		var college College
 
 		err := rows.Scan(
+			&totalRecords,
 			&college.ID,
 			&college.Name,
 			&college.Domain,
 			&college.Version,
 		)
 		if err != nil {
-			return nil, err
+			return nil, Metadata{}, err
 		}
 
 		colleges = append(colleges, &college)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
 
-	return colleges, nil
+	return colleges, metadata, nil
 
 }

@@ -12,10 +12,10 @@ Content-Type: application/json
 }
 
 ###
-get {{host}}/college?name=h&sort=-id
+get {{host}}/college?name=uni&page=2&page_size=2&sort=name
 
 ###
-patch {{host}}/college/6
+patch {{host}}/college/9
 Content-Type: application/json
 
 {
@@ -23,4 +23,4 @@ Content-Type: application/json
 }
 
 ###
-delete {{host}}/college/14
+delete {{host}}/college/9
