@@ -1,27 +1,20 @@
 package data
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 )
 
 type College struct {
 	ID      int64  `json:"id"`
 	Name    string `json:"name" validate:"required"`
 	Domain  string `json:"domain" validate:"required,email"`
-	Version string `json:"version"`
+	Version int    `json:"version"`
 }
 
 type CollegeModel struct {
 	DB *sql.DB
-}
-
-func handlectx() (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	return ctx, cancel
 }
 
 func (c CollegeModel) Create(college *College) (int64, error) {
@@ -69,7 +62,14 @@ func (c CollegeModel) Get(id int64) (*College, error) {
 
 	var college College
 
-	err := c.DB.QueryRowContext(ctx, query, id).Scan(&college.ID, &college.Name, &college.Domain, &college.Version)
+	dest := []interface{}{
+		&college.ID,
+		&college.Name,
+		&college.Domain,
+		&college.Version,
+	}
+
+	err := c.DB.QueryRowContext(ctx, query, id).Scan(dest...)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,14 @@ func (c CollegeModel) GetAll(name string, filters Filters) ([]*College, Metadata
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	rows, err := c.DB.QueryContext(ctx, query, name, name, filters.limit(), filters.offset())
+	args := []interface{}{
+		name,
+		name,
+		filters.limit(),
+		filters.offset(),
+	}
+
+	rows, err := c.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, Metadata{}, err
 	}

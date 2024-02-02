@@ -13,7 +13,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func ConvertToInt64(str string) (int64, error) {
+type envelope map[string]interface{}
+
+func convertToInt64(str string) (int64, error) {
 	integer, err := strconv.ParseInt(str, 10, 64)
 	if err != nil {
 		return 0, err
@@ -21,9 +23,9 @@ func ConvertToInt64(str string) (int64, error) {
 	return integer, nil
 }
 
-func ReadIntParam(c echo.Context, str string) (int64, error) {
+func (app *application) readIntParam(c echo.Context, str string) (int64, error) {
 	param := c.Param("id")
-	id, err := ConvertToInt64(param)
+	id, err := convertToInt64(param)
 	if err != nil || id < 1 {
 		return 0, errors.New("invalid parameter")
 	}
@@ -95,4 +97,10 @@ func (app *application) readIntQuery(qs url.Values, key string, defaultValue int
 	}
 
 	return res
+}
+
+func updateField[T any](user *T, input *T) {
+	if input != nil {
+		*user = *input
+	}
 }

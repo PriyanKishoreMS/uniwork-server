@@ -25,10 +25,23 @@ func (app *application) routes() *echo.Echo {
 
 	e.GET("/", app.HealthCheckHandler)
 
-	e.GET("/college", app.listAllCollegesHandler)
-	e.POST("/college", app.createCollegeHandler)
-	e.GET("/college/:id", app.getCollegeHandler)
-	e.PATCH("/college/:id", app.updateCollegeHandler)
-	e.DELETE("/college/:id", app.deleteCollegeHandler)
+	college := e.Group("/college")
+	{
+		college.GET("", app.listAllCollegesHandler)
+		college.POST("", app.createCollegeHandler)
+		college.GET("/:id", app.getCollegeHandler)
+		college.PATCH("/:id", app.updateCollegeHandler)
+		college.DELETE("/:id", app.deleteCollegeHandler)
+	}
+
+	user := e.Group("/user")
+	{
+		user.GET("/college/:id", app.listAllUsersInCollegeHandler)
+		user.POST("", app.registerUserHandler)
+		user.GET("/:id", app.getUserHandler)
+		user.PATCH("/:id", app.updateUserHandler)
+		user.DELETE("/:id", app.deleteUserHandler)
+	}
+
 	return e
 }

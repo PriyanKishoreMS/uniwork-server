@@ -1,0 +1,30 @@
+@host = http://localhost:3000
+
+###
+get {{host}}/user/1
+
+###
+post {{host}}/user
+Content-Type: application/json
+
+{
+    "college_id": 10,
+    "name": "Raj",
+    "mobile": "78654",
+    "email": "20113025@student.sath.ac.in",
+    "dept": "Computer Science"
+}
+
+###
+patch {{host}}/user/1
+Content-Type: application/json
+
+{
+    "dept": "Computer Science"
+}
+
+###
+delete {{host}}/user/7
+
+###
+get {{host}}/user/college/3

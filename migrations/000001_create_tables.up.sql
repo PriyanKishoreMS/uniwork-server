@@ -10,13 +10,17 @@ CREATE TABLE IF NOT EXISTS users (
     college_id BIGINT NOT NULL,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    profile_pic TEXT,
-    dept VARCHAR(255),
-    review DECIMAL(2,1),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    mobile VARCHAR(15) NOT NULL UNIQUE,
+    profile_pic VARCHAR(512) NOT NULL DEFAULT "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Unknown_person.jpg/434px-Unknown_person.jpg",
+    dept VARCHAR(255) NOT NULL,
+    services_completed INT NOT NULL DEFAULT 0, 
+    earned BIGINT NOT NULL DEFAULT 0,
+    review DECIMAL(2,1) NOT NULL DEFAULT 5,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     version INT NOT NULL DEFAULT 1,
     FOREIGN KEY (college_id) REFERENCES colleges(id),
-    INDEX (college_id)
+    INDEX (college_id),
+    INDEX (name)
 );
 
 CREATE TABLE IF NOT EXISTS services (
