@@ -19,6 +19,7 @@ type application struct {
 	config   Config
 	models   data.Models
 	validate validator.Validate
+	// wg       sync.WaitGroup
 }
 
 var validate validator.Validate
@@ -46,7 +47,7 @@ func main() {
 		validate: validate,
 	}
 	e := app.routes()
-	e.Server.ReadHeaderTimeout = time.Second * 10
+	e.Server.ReadTimeout = time.Second * 10
 	e.Server.WriteTimeout = time.Second * 20
 	e.Server.IdleTimeout = time.Minute
 	e.HideBanner = true
