@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
 	"github.com/priyankishorems/uniwork-server/internal/data"
 )
@@ -18,25 +19,46 @@ func (app *application) registerUserHandler(c echo.Context) error {
 		return err
 	}
 
+	// TODO: Implement Google Siginin and return the user details
+
+	// TODO: Implement regex for each college emails to verify
+
 	err := app.validate.Struct(user)
 	if err != nil {
 		app.ValidationError(c, err)
 		return err
 	}
 
-	res, err := app.models.Users.Register(user)
+	id, err := app.models.Users.Register(user)
+	if err != nil {
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
+			app.CustomErrorResponse(c, envelope{
+				"duplicate": "email already registered",
+			}, http.StatusConflict, err)
+			return err
+		}
+		app.InternalServerError(c, err)
+		return err
+	}
+
+	accessToken, RefreshToken, err := data.GenerateAuthTokens(id, app.config.jwt.secret, app.config.jwt.issuer)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
-	data, err := app.models.Users.Get(res)
+	data, err := app.models.Users.Get(id)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
-	return c.JSON(http.StatusOK, envelope{"data": data})
+	authTokens := envelope{
+		"accessToken":  string(accessToken),
+		"refreshToken": string(RefreshToken),
+	}
+
+	return c.JSON(http.StatusOK, envelope{"authTokens": authTokens, "data": data})
 }
 
 func (app *application) getUserHandler(c echo.Context) error {

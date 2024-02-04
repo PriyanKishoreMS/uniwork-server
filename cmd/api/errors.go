@@ -48,6 +48,11 @@ func (app *application) EditConflictResponse(c echo.Context) {
 	app.resposeError(c, http.StatusConflict, message)
 }
 
+func (app *application) CustomErrorResponse(c echo.Context, message envelope, status int, err error) {
+	app.logError(c, err)
+	app.resposeError(c, status, message)
+}
+
 func (app *application) ValidationError(c echo.Context, err error) {
 	validationError := make(map[string]interface{})
 	validErrs := err.(validator.ValidationErrors)

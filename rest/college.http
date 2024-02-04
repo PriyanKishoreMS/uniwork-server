@@ -12,7 +12,7 @@ Content-Type: application/json
 }
 
 ###
-get {{host}}/college/3
+get {{host}}/college
 
 ###
 patch {{host}}/college/9

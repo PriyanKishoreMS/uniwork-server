@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -13,6 +14,10 @@ import (
 type Config struct {
 	port int
 	env  string
+	jwt  struct {
+		secret string
+		issuer string
+	}
 }
 
 type application struct {
@@ -29,6 +34,8 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 3000, "Port number")
 	flag.StringVar(&cfg.env, "env", "development", "Environment")
+	flag.StringVar(&cfg.jwt.secret, "jwt secret", os.Getenv("JWT_SECRET"), "JWT secret")
+	flag.StringVar(&cfg.jwt.issuer, "jwt issuer", os.Getenv("JWT_ISSUER"), "JWT issuer")
 	flag.Parse()
 	log.SetHeader("${time_rfc3339} ${level}")
 
