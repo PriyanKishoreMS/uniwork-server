@@ -24,8 +24,10 @@ func (app *application) routes() *echo.Echo {
 	e.Use(middleware.Recover())
 
 	e.GET("/", app.HealthCheckHandler)
+	e.POST("/user", app.registerUserHandler)
+	e.POST("/security/refreshtoken", app.refreshTokenHandler)
 
-	college := e.Group("/college")
+	college := e.Group("/college", app.auth())
 	{
 		college.GET("", app.listAllCollegesHandler)
 		college.POST("", app.createCollegeHandler)
@@ -34,10 +36,9 @@ func (app *application) routes() *echo.Echo {
 		college.DELETE("/:id", app.deleteCollegeHandler)
 	}
 
-	user := e.Group("/user")
+	user := e.Group("/user", app.auth(), app.ratelimit())
 	{
 		user.GET("/college/:id", app.listAllUsersInCollegeHandler)
-		user.POST("", app.registerUserHandler)
 		user.GET("/:id", app.getUserHandler)
 		user.PATCH("/:id", app.updateUserHandler)
 		user.DELETE("/:id", app.deleteUserHandler)
