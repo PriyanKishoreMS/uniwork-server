@@ -90,6 +90,23 @@ func (app *application) rateLimit() echo.MiddlewareFunc {
 		clients = make(map[string]*client)
 	)
 
+	// background routine to remove old entries from the map
+	go func() {
+		for {
+			time.Sleep(time.Minute)
+
+			mu.Lock()
+
+			for ip, client := range clients {
+				if time.Since(client.lastseen) > 3*time.Minute {
+					delete(clients, ip)
+				}
+			}
+
+			mu.Unlock()
+		}
+	}()
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 
