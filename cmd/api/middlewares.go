@@ -2,9 +2,11 @@ package main
 
 import (
 	"errors"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -77,14 +79,45 @@ func (app *application) authenticate() echo.MiddlewareFunc {
 }
 
 func (app *application) rateLimit() echo.MiddlewareFunc {
-	limiter := rate.NewLimiter(20, 5)
+
+	type client struct {
+		limiter  *rate.Limiter
+		lastseen time.Time
+	}
+
+	var (
+		mu      sync.Mutex
+		clients = make(map[string]*client)
+	)
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 
-			if !limiter.Allow() {
-				app.RateLimitExceededResponse(c)
-				return nil
+			if app.config.limiter.enabled {
+				ip, _, err := net.SplitHostPort(c.Request().RemoteAddr)
+				if err != nil {
+					app.InternalServerError(c, err)
+					return err
+				}
+
+				mu.Lock()
+
+				_, found := clients[ip]
+				if !found {
+					clients[ip] = &client{limiter: rate.NewLimiter(rate.Limit(app.config.limiter.rps), app.config.limiter.burst)}
+				}
+
+				clients[ip].lastseen = time.Now()
+
+				if !clients[ip].limiter.Allow() {
+					mu.Unlock()
+					app.RateLimitExceededResponse(c)
+					return errors.New("rate limit exceeded")
+				}
+
+				mu.Unlock()
 			}
+
 			return next(c)
 		}
 	}

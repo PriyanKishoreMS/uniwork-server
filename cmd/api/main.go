@@ -18,6 +18,11 @@ type Config struct {
 		secret string
 		issuer string
 	}
+	limiter struct {
+		rps     int
+		burst   int
+		enabled bool
+	}
 }
 
 type application struct {
@@ -34,8 +39,14 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 3000, "Port number")
 	flag.StringVar(&cfg.env, "env", "development", "Environment")
-	flag.StringVar(&cfg.jwt.secret, "jwt secret", os.Getenv("JWT_SECRET"), "JWT secret")
-	flag.StringVar(&cfg.jwt.issuer, "jwt issuer", os.Getenv("JWT_ISSUER"), "JWT issuer")
+
+	flag.StringVar(&cfg.jwt.secret, "jwt-secret", os.Getenv("JWT_SECRET"), "JWT secret")
+	flag.StringVar(&cfg.jwt.issuer, "jwt-issuer", os.Getenv("JWT_ISSUER"), "JWT issuer")
+
+	flag.IntVar(&cfg.limiter.rps, "limiter-rps", 10, "Rate limiter max requests per second")
+	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 10, "Rate limiter max burst")
+	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Rate limiter enabled")
+
 	flag.Parse()
 	log.SetHeader("${time_rfc3339} ${level}")
 

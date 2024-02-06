@@ -22,7 +22,6 @@ func (app *application) routes() *echo.Echo {
 	e := echo.New()
 	// e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	// e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
 	e.Use(app.rateLimit())
 
 	e.GET("/health", app.HealthCheckHandler)
