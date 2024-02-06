@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,13 +10,14 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pascaldekloe/jwt"
 	"github.com/priyankishorems/uniwork-server/internal/data"
+	"golang.org/x/time/rate"
 )
 
 var (
 	ErrUserUnauthorized = errors.New("middleware error: user unauthorized")
 )
 
-func (app *application) auth() echo.MiddlewareFunc {
+func (app *application) authenticate() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			c.Response().Writer.Header().Add("Vary", "Authorization")
@@ -76,10 +76,15 @@ func (app *application) auth() echo.MiddlewareFunc {
 	}
 }
 
-func (app *application) ratelimit() echo.MiddlewareFunc {
+func (app *application) rateLimit() echo.MiddlewareFunc {
+	limiter := rate.NewLimiter(20, 5)
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			fmt.Println("this is from the ratelimit middleware")
+
+			if !limiter.Allow() {
+				app.RateLimitExceededResponse(c)
+				return nil
+			}
 			return next(c)
 		}
 	}

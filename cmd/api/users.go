@@ -33,7 +33,7 @@ func (app *application) registerUserHandler(c echo.Context) error {
 	if err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
 			app.CustomErrorResponse(c, envelope{
-				"duplicate": "email already registered",
+				"duplicate": "duplicate entry",
 			}, http.StatusConflict, err)
 			return err
 		}
@@ -79,28 +79,18 @@ func (app *application) getUserHandler(c echo.Context) error {
 }
 
 func (app *application) updateUserHandler(c echo.Context) error {
-	id, err := app.readIntParam(c, "id")
-	if err != nil {
-		app.NotFoundResponse(c)
-		return err
-	}
-
-	user, err := app.models.Users.Get(id)
-	if err != nil {
-		app.BadRequest(c, err)
-		return err
-	}
+	user := app.contextGetUser(c)
 
 	var input struct {
-		CollegeID  *int64   `json:"college_id"`
-		Name       *string  `json:"name" validate:"required"`
-		Email      *string  `json:"email" validate:"required,email"`
-		Mobile     *string  `json:"mobile"`
-		ProfilePic **string `json:"profile_pic"`
-		Dept       *string  `json:"dept" validate:"required"`
+		CollegeID  *int64  `json:"college_id"`
+		Name       *string `json:"name" validate:"required"`
+		Email      *string `json:"email" validate:"required,email"`
+		Mobile     *string `json:"mobile"`
+		ProfilePic *string `json:"profile_pic"`
+		Dept       *string `json:"dept" validate:"required"`
 	}
 
-	err = app.readJSON(c, &input)
+	err := app.readJSON(c, &input)
 	if err != nil {
 		app.BadRequest(c, err)
 		return err
@@ -136,13 +126,9 @@ func (app *application) updateUserHandler(c echo.Context) error {
 }
 
 func (app *application) deleteUserHandler(c echo.Context) error {
-	id, err := app.readIntParam(c, "id")
-	if err != nil {
-		app.NotFoundResponse(c)
-		return err
-	}
+	user := app.contextGetUser(c)
 
-	res, err := app.models.Users.Delete(id)
+	res, err := app.models.Users.Delete(user.ID)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err

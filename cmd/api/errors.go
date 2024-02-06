@@ -53,6 +53,11 @@ func (app *application) UserUnAuthorizedResponse(c echo.Context) {
 	app.resposeError(c, http.StatusUnauthorized, message)
 }
 
+func (app *application) RateLimitExceededResponse(c echo.Context) {
+	message := "Rate limit exceeded"
+	app.resposeError(c, http.StatusTooManyRequests, message)
+}
+
 func (app *application) CustomErrorResponse(c echo.Context, message envelope, status int, err error) {
 	app.logError(c, err)
 	app.resposeError(c, status, message)

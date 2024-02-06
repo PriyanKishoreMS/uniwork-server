@@ -1,11 +1,11 @@
 @host = http://localhost:3000
 
-@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDcyNTk5MDguNjM5MzAxLCJpYXQiOjE3MDcyMTY3MDguNjM5MzAwMywiaXNzIjoiZ2l0aHViLmNvbS9wcml5YW5raXNob3JlbXMvdW5pd29yayIsInN1YiI6IjQyIiwidHlwZSI6ImFjY2VzcyJ9.180QYFlMpmH95SuULMvF1XCYUitJJRAi74Zo6dcrYR8
-@refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDk4MDg3MDguNjM5MzU4NSwiaWF0IjoxNzA3MjE2NzA4LjYzOTM1OCwiaXNzIjoiZ2l0aHViLmNvbS9wcml5YW5raXNob3JlbXMvdW5pd29yayIsInN1YiI6IjQyIiwidHlwZSI6InJlZnJlc2gifQ.gOCOgXRGHOS3LClc9Ozlrd-iofGQCRDQI52Pc2j29oE
-
+@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDcyNjU0OTYuOTg3MzIzLCJpYXQiOjE3MDcyMjIyOTYuOTg3MzIxOSwiaXNzIjoiZ2l0aHViLmNvbS9wcml5YW5raXNob3JlbXMvdW5pd29yayIsInN1YiI6IjQ1IiwidHlwZSI6ImFjY2VzcyJ9.dUTV3anE-YjePRdoNCpgPd5n7Hak1ymhTspCCSsmRso
+@refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDk4MTQyOTYuOTg3NDAzNiwiaWF0IjoxNzA3MjIyMjk2Ljk4NzQwMywiaXNzIjoiZ2l0aHViLmNvbS9wcml5YW5raXNob3JlbXMvdW5pd29yayIsInN1YiI6IjQ1IiwidHlwZSI6InJlZnJlc2gifQ.ku_iB65U1JVQrjy0e69mTWes8q3_O4vkj8sHGwTKa6w
 
 ###
-get {{host}}/user/13
+get {{host}}/user/45
+Authorization: Bearer {{accessToken}}
 
 ###
 get {{host}}/user/college/3
@@ -16,22 +16,23 @@ Content-Type: application/json
 
 {
     "college_id": 3,
-    "name": "Test user",
-    "mobile": "1234567890",
-    "email": "20113020@student.sath.ac.in",
+    "name": "Test user 2",
+    "mobile": "1234567892",
+    "email": "20113018@student.sath.ac.in",
     "dept": "Computer Science"
 }
 
 ###
-patch {{host}}/user/1
+patch {{host}}/user
 Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 {
-    "dept": "Computer Science"
+    "profile_pic": "this is the pic.jpg"
 }
 
 ###
-delete {{host}}/user/41
+delete {{host}}/user
 Authorization: Bearer {{accessToken}}
 
 ###

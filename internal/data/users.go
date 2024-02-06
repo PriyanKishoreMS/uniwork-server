@@ -15,7 +15,7 @@ type User struct {
 	Name              string    `json:"name" validate:"required"`
 	Email             string    `json:"email,omitempty" validate:"required,email"`
 	Mobile            string    `json:"mobile,omitempty"`
-	ProfilePic        *string   `json:"profile_pic"`
+	ProfilePic        string    `json:"profile_pic"`
 	Dept              string    `json:"dept" validate:"required"`
 	ServicesCompleted int       `json:"services_completed,omitempty"`
 	Earned            int64     `json:"earned,omitempty"`
@@ -46,22 +46,22 @@ func (u UserModel) Register(user *User) (int64, error) {
 
 	res, err := u.DB.ExecContext(ctx, query, args...)
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 	log.Info(rowsAffected)
 
 	if rowsAffected == 0 {
-		return 0, sql.ErrNoRows
+		return -1, sql.ErrNoRows
 	}
 
 	LastInsertId, err := res.LastInsertId()
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 
 	return LastInsertId, nil
@@ -93,6 +93,39 @@ func (u UserModel) Get(id int64) (*User, error) {
 	}
 
 	err := u.DB.QueryRowContext(ctx, query, id).Scan(dest...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (u UserModel) GetUserByEmail(email string) (*User, error) {
+	query := `SELECT id, college_id, name, email, mobile, dept, profile_pic, services_completed, earned, review, created_at, version
+	FROM users
+	WHERE email=?
+	`
+	ctx, cancel := handlectx()
+	defer cancel()
+
+	var user User
+
+	dest := []interface{}{
+		&user.ID,
+		&user.CollegeID,
+		&user.Name,
+		&user.Email,
+		&user.Mobile,
+		&user.Dept,
+		&user.ProfilePic,
+		&user.ServicesCompleted,
+		&user.Earned,
+		&user.Review,
+		&user.CreatedAt,
+		&user.Version,
+	}
+
+	err := u.DB.QueryRowContext(ctx, query, email).Scan(dest...)
 	if err != nil {
 		return nil, err
 	}
