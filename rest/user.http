@@ -1,20 +1,24 @@
 @host = http://localhost:3000
 
+@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDcyNTk5MDguNjM5MzAxLCJpYXQiOjE3MDcyMTY3MDguNjM5MzAwMywiaXNzIjoiZ2l0aHViLmNvbS9wcml5YW5raXNob3JlbXMvdW5pd29yayIsInN1YiI6IjQyIiwidHlwZSI6ImFjY2VzcyJ9.180QYFlMpmH95SuULMvF1XCYUitJJRAi74Zo6dcrYR8
+@refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDk4MDg3MDguNjM5MzU4NSwiaWF0IjoxNzA3MjE2NzA4LjYzOTM1OCwiaXNzIjoiZ2l0aHViLmNvbS9wcml5YW5raXNob3JlbXMvdW5pd29yayIsInN1YiI6IjQyIiwidHlwZSI6InJlZnJlc2gifQ.gOCOgXRGHOS3LClc9Ozlrd-iofGQCRDQI52Pc2j29oE
+
+
 ###
 get {{host}}/user/13
 
 ###
 get {{host}}/user/college/3
-
+Authorization: Bearer {{accessToken}}
 ###
 post {{host}}/user
 Content-Type: application/json
 
 {
     "college_id": 3,
-    "name": "Brian lara",
-    "mobile": "546577",
-    "email": "20113027@student.sath.ac.in",
+    "name": "Test user",
+    "mobile": "1234567890",
+    "email": "20113020@student.sath.ac.in",
     "dept": "Computer Science"
 }
 
@@ -27,4 +31,9 @@ Content-Type: application/json
 }
 
 ###
-delete {{host}}/user/36
+delete {{host}}/user/41
+Authorization: Bearer {{accessToken}}
+
+###
+post {{host}}/security/refreshtoken
+Authorization: Bearer {{refreshToken}}

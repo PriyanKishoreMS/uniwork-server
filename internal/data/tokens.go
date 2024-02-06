@@ -9,11 +9,11 @@ import (
 
 func GenerateAuthTokens(id int64, secret string, issuer string) ([]byte, []byte, error) {
 	byteSecret := []byte(secret)
-	accessToken, err := generateAccessToken(id, byteSecret, issuer)
+	accessToken, err := GenerateAccessToken(id, byteSecret, issuer)
 	if err != nil {
 		return nil, nil, err
 	}
-	refreshToken, err := generateRefreshToken(id, byteSecret, issuer)
+	refreshToken, err := GenerateRefreshToken(id, byteSecret, issuer)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -21,7 +21,7 @@ func GenerateAuthTokens(id int64, secret string, issuer string) ([]byte, []byte,
 	return accessToken, refreshToken, nil
 }
 
-func generateAccessToken(id int64, secret []byte, issuer string) ([]byte, error) {
+func GenerateAccessToken(id int64, secret []byte, issuer string) ([]byte, error) {
 	var claims jwt.Claims
 	claims.Subject = strconv.FormatInt(id, 10)
 	claims.Issued = jwt.NewNumericTime(time.Now())
@@ -39,7 +39,7 @@ func generateAccessToken(id int64, secret []byte, issuer string) ([]byte, error)
 	return accessToken, err
 }
 
-func generateRefreshToken(id int64, secret []byte, issuer string) ([]byte, error) {
+func GenerateRefreshToken(id int64, secret []byte, issuer string) ([]byte, error) {
 	var claims jwt.Claims
 	claims.Subject = strconv.FormatInt(id, 10)
 	claims.Issued = jwt.NewNumericTime(time.Now())

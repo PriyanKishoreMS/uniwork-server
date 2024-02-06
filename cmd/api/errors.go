@@ -48,6 +48,11 @@ func (app *application) EditConflictResponse(c echo.Context) {
 	app.resposeError(c, http.StatusConflict, message)
 }
 
+func (app *application) UserUnAuthorizedResponse(c echo.Context) {
+	message := "You are not authorized to access this"
+	app.resposeError(c, http.StatusUnauthorized, message)
+}
+
 func (app *application) CustomErrorResponse(c echo.Context, message envelope, status int, err error) {
 	app.logError(c, err)
 	app.resposeError(c, status, message)

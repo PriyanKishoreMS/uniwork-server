@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 	"github.com/priyankishorems/uniwork-server/internal/data"
 )
 
@@ -124,6 +125,9 @@ func (app *application) listAllCollegesHandler(c echo.Context) error {
 		Name string
 		data.Filters
 	}
+
+	user := app.contextGetUser(c)
+	log.Info("user: ", user)
 
 	qs := c.Request().URL.Query()
 	input.Name = app.readStringQuery(qs, "name", "")
