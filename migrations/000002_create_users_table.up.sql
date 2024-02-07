@@ -1,0 +1,24 @@
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY UNIQUE,
+    college_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    mobile VARCHAR(15) NOT NULL UNIQUE,
+    profile_pic VARCHAR(512) NOT NULL DEFAULT "default",
+    dept VARCHAR(255) NOT NULL,
+    services_completed INT NOT NULL DEFAULT 0, 
+    earned BIGINT NOT NULL DEFAULT 0,
+    review DECIMAL(2,1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version INT NOT NULL DEFAULT 1,
+    CONSTRAINT user_clg_fk FOREIGN KEY (college_id) REFERENCES colleges(id),
+    INDEX (college_id),
+    INDEX (name)
+);
+
+INSERT INTO users (college_id, name, email, dept, mobile)
+VALUES
+(1, "Priyan Kishore", "20113022@student.hindustanuniv.ac.in", "Computer Science", "7010376477"),
+(1, "Chandana Sathwika", "20113024@student.hindustanuniv.ac.in", "Computer Science", "7674017177"),
+(6, "Laksitha Bharani", "laksitha2004@gmail.com", "MBBS", "6380886960"),
+(3, "Test User", "testuser@college.ac.in", "Test Dept", "1234567890");

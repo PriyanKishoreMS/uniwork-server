@@ -25,7 +25,7 @@ func GenerateAccessToken(id int64, secret []byte, issuer string) ([]byte, error)
 	var claims jwt.Claims
 	claims.Subject = strconv.FormatInt(id, 10)
 	claims.Issued = jwt.NewNumericTime(time.Now())
-	claims.Expires = jwt.NewNumericTime(time.Now().Add(time.Hour * 12))
+	claims.Expires = jwt.NewNumericTime(time.Now().Add(time.Hour * 24))
 	claims.Issuer = issuer
 	claims.Set = map[string]interface{}{
 		"type": "access",

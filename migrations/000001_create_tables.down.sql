@@ -1,5 +1,0 @@
-DROP TABLE IF EXISTS services;
-
-DROP TABLE IF EXISTS users;
-
-DROP TABLE IF EXISTS colleges;

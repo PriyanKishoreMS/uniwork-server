@@ -94,7 +94,7 @@ func (u UserModel) Get(id int64) (*User, error) {
 
 	err := u.DB.QueryRowContext(ctx, query, id).Scan(dest...)
 	if err != nil {
-		return nil, err
+		return nil, ErrRecordNotFound
 	}
 
 	return &user, nil

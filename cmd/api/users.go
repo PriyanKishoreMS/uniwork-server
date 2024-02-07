@@ -31,14 +31,27 @@ func (app *application) registerUserHandler(c echo.Context) error {
 
 	id, err := app.models.Users.Register(user)
 	if err != nil {
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
-			app.CustomErrorResponse(c, envelope{
-				"duplicate": "duplicate entry",
-			}, http.StatusConflict, err)
-			return err
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+			switch mysqlErr.Number {
+			case 1062:
+				{
+					app.CustomErrorResponse(c, envelope{
+						"duplicate": "duplicate entry",
+					}, http.StatusConflict, err)
+					return err
+				}
+			case 1452:
+				{
+					app.CustomErrorResponse(c, envelope{
+						"not found": "college not found",
+					}, http.StatusNotFound, err)
+					return err
+				}
+			default:
+				app.InternalServerError(c, err)
+				return err
+			}
 		}
-		app.InternalServerError(c, err)
-		return err
 	}
 
 	accessToken, RefreshToken, err := data.GenerateAuthTokens(id, app.config.jwt.secret, app.config.jwt.issuer)
@@ -75,7 +88,16 @@ func (app *application) getUserHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, envelope{"data": res})
+}
 
+func (app *application) getRequestedUserHandler(c echo.Context) error {
+	user := app.contextGetUser(c)
+	if user == nil {
+		app.NotFoundResponse(c)
+		return errors.New("not found")
+	}
+
+	return c.JSON(http.StatusOK, envelope{"data": user})
 }
 
 func (app *application) updateUserHandler(c echo.Context) error {

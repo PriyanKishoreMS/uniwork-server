@@ -1,0 +1,2 @@
+ALTER TABLE users DROP FOREIGN KEY user_clg_fk;
+DROP TABLE IF EXISTS users;

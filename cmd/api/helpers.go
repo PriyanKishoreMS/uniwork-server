@@ -41,7 +41,7 @@ func convertToInt64(str string) (int64, error) {
 }
 
 func (app *application) readIntParam(c echo.Context, str string) (int64, error) {
-	param := c.Param("id")
+	param := c.Param(str)
 	id, err := convertToInt64(param)
 	if err != nil || id < 1 {
 		return 0, errors.New("invalid parameter")

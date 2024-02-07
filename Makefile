@@ -20,7 +20,7 @@ down:
 	@docker compose down	
 
 migrate_create:
-	@migrate create -seq -ext=.sql -dir=./migrations $(filename)
+	@migrate create -seq -ext=.sql -dir=./migrations $(fn)
 
 dsn := $(shell cat dsn.txt)
 
@@ -32,3 +32,9 @@ migrate_down:
 
 migrate_force:
 	@migrate -path=./migrations -database="${dsn}" force "${n}"
+
+migrate_up_level:
+	@migrate -path=./migrations -database="${dsn}" up "${l}"
+
+migrate_down_level:
+	@migrate -path=./migrations -database="${dsn}" down "${l}"
