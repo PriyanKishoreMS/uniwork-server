@@ -2,38 +2,29 @@
 
 @accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDc1MDM1MzQuODAxMDQ1NCwiaWF0IjoxNzA3NDE3MTM0LjgwMTA0NDIsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiI1IiwidHlwZSI6ImFjY2VzcyJ9.lg5FeA1eqBZ_8Ald_a0J2hO-K_xaezLMPXCNuagY8X8
 @refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTAwMDkxMzQuODAxMTU3NSwiaWF0IjoxNzA3NDE3MTM0LjgwMTE1NjUsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiI1IiwidHlwZSI6InJlZnJlc2gifQ.jEu_LqKwLWegZUijpUtioT-rmSfTO8Q5Rwlg1KVUUBE
-###
-get {{host}}/user
-Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/user/college/1
+post {{host}}/task
 Authorization: Bearer {{accessToken}}
-###
-post {{host}}/user
 Content-Type: application/json
 
 {
-    "college_id": 1,
-    "name": "Test user 2",
-    "mobile": "1234567876",
-    "email": "20513017@student.sath.ac.in",
-    "dept": "Computer Science"
+    "title": "Document Printing for review 2",
+    "description": "Print this for review",
+    "category": "Document Printing",
+    "Price": 100,
+    "status": "open",
+    "images": ["https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"]
 }
 
 ###
-patch {{host}}/user
-Content-Type: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "avatar": "hello bro.jpg"
-}
-
-###
-delete {{host}}/user
+get {{host}}/task/1
 Authorization: Bearer {{accessToken}}
 
 ###
-post {{host}}/security/refreshtoken
-Authorization: Bearer {{refreshToken}}
+delete {{host}}/task/3
+Authorization: Bearer {{accessToken}}
+
+###
+get {{host}}/task?category="Document Printing","Fashion"&page_size=2
+Authorization: Bearer {{accessToken}}

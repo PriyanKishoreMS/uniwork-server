@@ -104,12 +104,12 @@ func (app *application) updateUserHandler(c echo.Context) error {
 	user := app.contextGetUser(c)
 
 	var input struct {
-		CollegeID  *int64  `json:"college_id"`
-		Name       *string `json:"name" validate:"required"`
-		Email      *string `json:"email" validate:"required,email"`
-		Mobile     *string `json:"mobile"`
-		ProfilePic *string `json:"profile_pic"`
-		Dept       *string `json:"dept" validate:"required"`
+		CollegeID *int64  `json:"college_id"`
+		Name      *string `json:"name" validate:"required"`
+		Email     *string `json:"email" validate:"required,email"`
+		Mobile    *string `json:"mobile"`
+		Avatar    *string `json:"avatar"`
+		Dept      *string `json:"dept" validate:"required"`
 	}
 
 	err := app.readJSON(c, &input)
@@ -122,7 +122,7 @@ func (app *application) updateUserHandler(c echo.Context) error {
 	updateField(&user.Name, input.Name)
 	updateField(&user.Email, input.Email)
 	updateField(&user.Mobile, input.Mobile)
-	updateField(&user.ProfilePic, input.ProfilePic)
+	updateField(&user.Avatar, input.Avatar)
 	updateField(&user.Dept, input.Dept)
 
 	err = app.validate.Struct(user)
@@ -179,7 +179,7 @@ func (app *application) listAllUsersInCollegeHandler(c echo.Context) error {
 	input.Filters.PageSize = app.readIntQuery(qs, "page_size", 10)
 	input.Filters.Sort = app.readStringQuery(qs, "sort", "id")
 
-	input.Filters.SortSafelist = []string{"id", "name", "-id", "-name"}
+	input.Filters.SortSafelist = []string{"id", "name", "-id", "-name", "tasks_completed", "-tasks_completed", "rating", "-rating", "earned", "-earned"}
 
 	err = app.validate.Struct(input)
 	if err != nil {

@@ -31,8 +31,8 @@ func (app *application) routes() *echo.Echo {
 	college := e.Group("/college", app.authenticate())
 	{
 		college.GET("", app.listAllCollegesHandler)
-		college.POST("", app.createCollegeHandler)
 		college.GET("/:id", app.getCollegeHandler)
+		college.POST("", app.createCollegeHandler)
 		college.PATCH("/:id", app.updateCollegeHandler)
 		college.DELETE("/:id", app.deleteCollegeHandler)
 	}
@@ -41,8 +41,17 @@ func (app *application) routes() *echo.Echo {
 	{
 		user.GET("/college/:id", app.listAllUsersInCollegeHandler)
 		user.GET("/:id", app.getUserHandler)
+		user.GET("", app.getRequestedUserHandler)
 		user.PATCH("", app.updateUserHandler)
 		user.DELETE("", app.deleteUserHandler)
+	}
+
+	service := e.Group("/task", app.authenticate())
+	{
+		service.GET("", app.listAllTasksHandler)
+		service.GET("/:id", app.getTaskHandler)
+		service.POST("", app.addNewTaskHandler)
+		service.DELETE("/:id", app.deleteTaskHandler)
 	}
 
 	return e

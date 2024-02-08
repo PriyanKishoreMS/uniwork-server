@@ -18,14 +18,14 @@ func handlectx() (context.Context, context.CancelFunc) {
 }
 
 type Models struct {
-	Services ServiceModel
+	Tasks    TaskModel
 	Users    UserModel
 	Colleges CollegeModel
 }
 
 func NewModel(db *sql.DB) Models {
 	return Models{
-		Services: ServiceModel{DB: db},
+		Tasks:    TaskModel{DB: db},
 		Users:    UserModel{DB: db},
 		Colleges: CollegeModel{DB: db},
 	}

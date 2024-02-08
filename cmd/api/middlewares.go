@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	ErrUserUnauthorized = errors.New("middleware error: user unauthorized")
+	ErrUserUnauthorized = errors.New("authorization error: user unauthorized")
 )
 
 func (app *application) authenticate() echo.MiddlewareFunc {

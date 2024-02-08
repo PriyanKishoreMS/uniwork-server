@@ -10,18 +10,18 @@ import (
 )
 
 type User struct {
-	ID                int64     `json:"id"`
-	CollegeID         int64     `json:"college_id"`
-	Name              string    `json:"name" validate:"required"`
-	Email             string    `json:"email,omitempty" validate:"required,email"`
-	Mobile            string    `json:"mobile,omitempty"`
-	ProfilePic        string    `json:"profile_pic"`
-	Dept              string    `json:"dept" validate:"required"`
-	ServicesCompleted int       `json:"services_completed,omitempty"`
-	Earned            int64     `json:"earned,omitempty"`
-	Review            float64   `json:"review,omitempty"`
-	CreatedAt         time.Time `json:"created_at,omitempty"`
-	Version           int       `json:"version,omitempty"`
+	ID             int64     `json:"id"`
+	CollegeID      int64     `json:"college_id"`
+	Name           string    `json:"name" validate:"required"`
+	Email          string    `json:"email,omitempty" validate:"required,email"`
+	Mobile         string    `json:"mobile,omitempty"`
+	Avatar         string    `json:"avatar,omitempty"`
+	Dept           string    `json:"dept" validate:"required"`
+	TasksCompleted int       `json:"tasks_completed,omitempty"`
+	Earned         int64     `json:"earned,omitempty"`
+	Rating         float64   `json:"rating,omitempty"`
+	CreatedAt      time.Time `json:"created_at,omitempty"`
+	Version        int       `json:"version,omitempty"`
 }
 
 type UserModel struct {
@@ -68,7 +68,7 @@ func (u UserModel) Register(user *User) (int64, error) {
 }
 
 func (u UserModel) Get(id int64) (*User, error) {
-	query := `SELECT id, college_id, name, email, mobile, dept, profile_pic, services_completed, earned, review, created_at, version
+	query := `SELECT id, college_id, name, email, mobile, dept, avatar, tasks_completed, earned, rating, created_at, version
 	FROM users
 	WHERE id=?
 	`
@@ -84,10 +84,10 @@ func (u UserModel) Get(id int64) (*User, error) {
 		&user.Email,
 		&user.Mobile,
 		&user.Dept,
-		&user.ProfilePic,
-		&user.ServicesCompleted,
+		&user.Avatar,
+		&user.TasksCompleted,
 		&user.Earned,
-		&user.Review,
+		&user.Rating,
 		&user.CreatedAt,
 		&user.Version,
 	}
@@ -101,7 +101,7 @@ func (u UserModel) Get(id int64) (*User, error) {
 }
 
 func (u UserModel) GetUserByEmail(email string) (*User, error) {
-	query := `SELECT id, college_id, name, email, mobile, dept, profile_pic, services_completed, earned, review, created_at, version
+	query := `SELECT id, college_id, name, email, mobile, dept, avatar, tasks_completed, earned, rating, created_at, version
 	FROM users
 	WHERE email=?
 	`
@@ -117,10 +117,10 @@ func (u UserModel) GetUserByEmail(email string) (*User, error) {
 		&user.Email,
 		&user.Mobile,
 		&user.Dept,
-		&user.ProfilePic,
-		&user.ServicesCompleted,
+		&user.Avatar,
+		&user.TasksCompleted,
 		&user.Earned,
-		&user.Review,
+		&user.Rating,
 		&user.CreatedAt,
 		&user.Version,
 	}
@@ -134,9 +134,8 @@ func (u UserModel) GetUserByEmail(email string) (*User, error) {
 }
 
 func (u UserModel) Update(user *User) (int64, error) {
-
 	query := `UPDATE users 
-	SET college_id=?, name=?, email=?, mobile=?, dept=?, profile_pic=?, version=version+1
+	SET college_id=?, name=?, email=?, mobile=?, dept=?, avatar=?, version=version+1
 	WHERE id=? AND version=?
 	`
 
@@ -146,7 +145,7 @@ func (u UserModel) Update(user *User) (int64, error) {
 		&user.Email,
 		&user.Mobile,
 		&user.Dept,
-		&user.ProfilePic,
+		&user.Avatar,
 		&user.ID,
 		&user.Version,
 	}
@@ -197,12 +196,8 @@ func (u UserModel) Delete(id int64) (int64, error) {
 
 func (u UserModel) GetAllInCollege(name string, college_id int64, filters Filters) ([]*User, Metadata, error) {
 	query := fmt.Sprint(`
-	SELECT (
-		SELECT COUNT(*) FROM users
-		WHERE LOWER(name) LIKE LOWER(CONCAT('%', ? ,'%'))
-		AND college_id=?
-		) AS total,
-	id, college_id, name, dept, profile_pic, review
+	SELECT COUNT(*) OVER () AS total,
+	id, college_id, name, dept, avatar, rating
 	FROM users
 	WHERE LOWER(name) LIKE LOWER(CONCAT('%', ? ,'%'))
 	AND college_id=?
@@ -214,8 +209,6 @@ func (u UserModel) GetAllInCollege(name string, college_id int64, filters Filter
 	defer cancel()
 
 	args := []interface{}{
-		name,
-		college_id,
 		name,
 		college_id,
 		filters.limit(),
@@ -241,8 +234,8 @@ func (u UserModel) GetAllInCollege(name string, college_id int64, filters Filter
 			&user.CollegeID,
 			&user.Name,
 			&user.Dept,
-			&user.ProfilePic,
-			&user.Review,
+			&user.Avatar,
+			&user.Rating,
 		)
 		if err != nil {
 			return nil, Metadata{}, err

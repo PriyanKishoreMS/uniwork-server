@@ -137,10 +137,7 @@ func (c CollegeModel) Delete(id int64) (int64, error) {
 
 func (c CollegeModel) GetAll(name string, filters Filters) ([]*College, Metadata, error) {
 	query := fmt.Sprint(`
-	SELECT (
-		SELECT COUNT(*) FROM colleges	
-		WHERE LOWER(name) LIKE LOWER(CONCAT('%', ? ,'%'))
-		) AS total_colleges,
+	SELECT COUNT(*) OVER () AS total,
 	id, name, domain, version
 	FROM colleges
 	WHERE LOWER(name) LIKE LOWER(CONCAT('%', ? ,'%'))
@@ -152,7 +149,6 @@ func (c CollegeModel) GetAll(name string, filters Filters) ([]*College, Metadata
 	defer cancel()
 
 	args := []interface{}{
-		name,
 		name,
 		filters.limit(),
 		filters.offset(),

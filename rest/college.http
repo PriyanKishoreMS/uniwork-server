@@ -1,6 +1,6 @@
 @host = http://localhost:3000
-@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDcyNjU0OTYuOTg3MzIzLCJpYXQiOjE3MDcyMjIyOTYuOTg3MzIxOSwiaXNzIjoiZ2l0aHViLmNvbS9wcml5YW5raXNob3JlbXMvdW5pd29yayIsInN1YiI6IjQ1IiwidHlwZSI6ImFjY2VzcyJ9.dUTV3anE-YjePRdoNCpgPd5n7Hak1ymhTspCCSsmRso
-@refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDk4MTQyOTYuOTg3NDAzNiwiaWF0IjoxNzA3MjIyMjk2Ljk4NzQwMywiaXNzIjoiZ2l0aHViLmNvbS9wcml5YW5raXNob3JlbXMvdW5pd29yayIsInN1YiI6IjQ1IiwidHlwZSI6InJlZnJlc2gifQ.ku_iB65U1JVQrjy0e69mTWes8q3_O4vkj8sHGwTKa6w
+@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDc1MDM1MzQuODAxMDQ1NCwiaWF0IjoxNzA3NDE3MTM0LjgwMTA0NDIsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiI1IiwidHlwZSI6ImFjY2VzcyJ9.lg5FeA1eqBZ_8Ald_a0J2hO-K_xaezLMPXCNuagY8X8
+@refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTAwMDkxMzQuODAxMTU3NSwiaWF0IjoxNzA3NDE3MTM0LjgwMTE1NjUsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiI1IiwidHlwZSI6InJlZnJlc2gifQ.jEu_LqKwLWegZUijpUtioT-rmSfTO8Q5Rwlg1KVUUBE
 get {{host}}
 
 ###
@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ###
-get {{host}}/college
+get {{host}}/college?name=uni
 Authorization: Bearer {{accessToken}}
 
 ###
