@@ -1,3 +1,5 @@
+-- +goose Up
+-- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS tasks (
     id BIGINT AUTO_INCREMENT PRIMARY KEY UNIQUE,
     user_id BIGINT NOT NULL,
@@ -16,6 +18,18 @@ CREATE TABLE IF NOT EXISTS tasks (
     INDEX (user_id),
     INDEX (college_id)
 );
+-- +goose StatementEnd
 
 
+-- +goose Down
+-- +goose StatementBegin
+ALTER TABLE tasks DROP FOREIGN KEY task_user_fk;
+-- +goose StatementEnd
 
+-- +goose StatementBegin
+ALTER TABLE tasks DROP FOREIGN KEY task_clg_fk;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+DROP TABLE IF EXISTS tasks;
+-- +goose StatementEnd

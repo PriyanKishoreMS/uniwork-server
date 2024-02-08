@@ -19,22 +19,16 @@ psql:
 down:
 	@docker compose down	
 
-migrate_create:
-	@migrate create -seq -ext=.sql -dir=./migrations $(fn)
-
 dsn := $(shell cat dsn.txt)
 
-migrate_up:
-	@migrate -path=./migrations -database="${dsn}" up
+goose_create:
+	@goose -s -dir='./migrations' mysql "${dsn}" create "${fn}" sql
 
-migrate_down:
-	@migrate -path=./migrations -database="${dsn}" down
+goose_one:
+	@goose -dir='./migrations' mysql "${dsn}" up-by-one
 
-migrate_force:
-	@migrate -path=./migrations -database="${dsn}" force "${n}"
+goose_down:
+	@goose -dir='./migrations' mysql "${dsn}" down
 
-migrate_up_level:
-	@migrate -path=./migrations -database="${dsn}" up "${l}"
-
-migrate_down_level:
-	@migrate -path=./migrations -database="${dsn}" down "${l}"
+goose_up:
+	@goose -dir='./migrations' mysql "${dsn}" up

@@ -1,3 +1,0 @@
-ALTER TABLE tasks DROP FOREIGN KEY task_user_fk;
-ALTER TABLE tasks DROP FOREIGN KEY task_clg_fk;
-DROP TABLE IF EXISTS tasks;
