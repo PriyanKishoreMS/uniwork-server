@@ -9,24 +9,6 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-var TaskCategories []string = []string{
-	"Academic Assistance",
-	"Tutor Home/Virtual",
-	"Books Rent/Buy",
-	"Vechicle Rent",
-	"Document Printing",
-	"Resume Creation",
-	"Job Search support",
-	"Grocery Shopping",
-	"Fashion",
-	"Social Media",
-	"IT Support",
-	"Graphic Design",
-	"Delivery",
-	"Ride sharing",
-	"Catering/Cooking",
-}
-
 type Task struct {
 	ID          int64     `json:"id"`
 	UserID      int64     `json:"user_id" validate:"required"`
@@ -166,20 +148,34 @@ func (t TaskModel) Delete(id int64) (int64, error) {
 	return rowsAffected, nil
 }
 
-func (t TaskModel) GetAllInCollege(category string, college_id int64, filters Filters) ([]*TaskWithUser, Metadata, error) {
-
-	query := fmt.Sprint(`
+func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filters Filters) ([]*TaskWithUser, Metadata, error) {
+	var query string
+	if category == "" {
+		query = fmt.Sprintf(`
+		SELECT
+		COUNT(*) OVER () AS total,
+		tasks.id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
+		FROM tasks
+		INNER JOIN users ON users.id=tasks.user_id
+		WHERE tasks.college_id=?
+		AND tasks.status='open'
+		ORDER BY %s %s, id ASC
+		LIMIT ? OFFSET ?;
+		`, filters.sortColumn(), filters.sortDirection())
+	} else {
+		query = fmt.Sprintf(`
 	SELECT 
 	COUNT(*) OVER () AS total,
 	tasks.id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
 	FROM tasks
 	INNER JOIN users ON users.id=tasks.user_id	
 	WHERE tasks.college_id=?
-	AND tasks.category IN (` + category + `)
+	AND tasks.category IN (%s)
 	AND tasks.status='open'
-	ORDER BY ` + filters.sortColumn() + " " + filters.sortDirection() + `, id ASC
+	ORDER BY %s %s, id ASC
 	LIMIT ? OFFSET ?;
-	`)
+	`, category, filters.sortColumn(), filters.sortDirection())
+	}
 
 	ctx, cancel := handlectx()
 	defer cancel()

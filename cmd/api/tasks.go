@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -13,7 +14,7 @@ import (
 )
 
 var (
-	ErrIvalidCategory = errors.New("invalid category")
+	ErrInvalidQuery = errors.New("invalid Query")
 )
 
 func (app *application) addNewTaskHandler(c echo.Context) error {
@@ -37,7 +38,7 @@ func (app *application) addNewTaskHandler(c echo.Context) error {
 	}
 
 	if !slices.Contains(data.TaskCategories, input.Category) {
-		app.CustomErrorResponse(c, envelope{"invalid": "Invalid category"}, http.StatusBadRequest, ErrIvalidCategory)
+		app.CustomErrorResponse(c, envelope{"invalid": "Invalid category"}, http.StatusBadRequest, ErrInvalidQuery)
 		return err
 	}
 
@@ -107,13 +108,23 @@ func (app *application) listAllTasksHandler(c echo.Context) error {
 	college_id := app.contextGetUser(c).CollegeID
 
 	qs := c.Request().URL.Query()
-	input.Category = app.readStringQuery(qs, "category", "Fashion")
+	input.Category = app.readStringQuery(qs, "category", "")
 	log.Info("Category here: ", input.Category)
 	input.Filters.Page = app.readIntQuery(qs, "page", 1)
 	input.Filters.PageSize = app.readIntQuery(qs, "page_size", 10)
 	input.Filters.Sort = app.readStringQuery(qs, "sort", "id")
 
 	input.Filters.SortSafelist = []string{"id", "name", "-id", "-name", "rating", "-rating", "price", "-price", "created_at", "-created_at", "expiry", "-expiry"}
+
+	categoryList := strings.Split(input.Category, ",")
+
+	for _, category := range categoryList {
+		category = strings.Trim(category, `"`)
+		if !slices.Contains(data.TaskCategories, category) {
+			app.BadRequest(c, ErrInvalidQuery)
+			return ErrInvalidQuery
+		}
+	}
 
 	err := app.validate.Struct(input)
 	if err != nil {
@@ -127,7 +138,7 @@ func (app *application) listAllTasksHandler(c echo.Context) error {
 		return err
 	}
 
-	res, metadata, err := app.models.Tasks.GetAllInCollege(input.Category, int64(college_id), input.Filters)
+	res, metadata, err := app.models.Tasks.GetAllTasksInCollege(input.Category, int64(college_id), input.Filters)
 	if err != nil {
 		app.BadRequest(c, err)
 		return err

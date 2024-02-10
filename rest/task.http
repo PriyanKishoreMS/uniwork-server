@@ -26,5 +26,5 @@ delete {{host}}/task/3
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task?category="Document Printing","Fashion"&page_size=2
+get {{host}}/task?category="Fashion","Document Printing"&page_size=2&page=2&sort=-rating
 Authorization: Bearer {{accessToken}}
