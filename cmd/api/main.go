@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
 	"time"
 
+	"firebase.google.com/go/messaging"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/gommon/log"
 	"github.com/priyankishorems/uniwork-server/internal/data"
@@ -29,6 +31,8 @@ type application struct {
 	config   Config
 	models   data.Models
 	validate validator.Validate
+	// fb       data.FirebaseUtils
+	fcmClient *messaging.Client
 	// wg       sync.WaitGroup
 }
 
@@ -53,16 +57,27 @@ func main() {
 	dbType := MySQLDB{}
 	db, err := dbType.Open(cfg)
 	if err != nil {
-		log.Fatal("error in opening db", err)
+		log.Fatalf("error in opening db; %v", err)
 	}
 	defer db.Close()
 
 	validate = *validator.New()
 
+	firebaseUtil, err := data.NewFirebaseUtil()
+	if err != nil {
+		log.Fatalf("error in firebase util: %v", err)
+	}
+
+	fcmClient, err := firebaseUtil.App.Messaging(context.Background())
+	if err != nil {
+		log.Fatalf("error in initializing fcmclient: %v", err)
+	}
+
 	app := &application{
-		config:   cfg,
-		models:   data.NewModel(db),
-		validate: validate,
+		config:    cfg,
+		models:    data.NewModel(db),
+		validate:  validate,
+		fcmClient: fcmClient,
 	}
 	e := app.routes()
 	e.Server.ReadTimeout = time.Second * 10
