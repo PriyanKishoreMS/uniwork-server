@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
-	"github.com/labstack/gommon/log"
 )
 
 type User struct {
@@ -28,10 +26,11 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-func (u UserModel) Register(user *User) (int64, error) {
+func (u UserModel) Register(user *User) error {
 	query := `
 	INSERT INTO users (college_id, name, email, dept, mobile)
-	VALUES(?, ?, ?, ?, ?)
+	VALUES($1, $2, $3, $4, $5)
+	RETURNING id, name, email, dept, mobile
 	`
 	args := []interface{}{
 		user.CollegeID,
@@ -44,33 +43,13 @@ func (u UserModel) Register(user *User) (int64, error) {
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	res, err := u.DB.ExecContext(ctx, query, args...)
-	if err != nil {
-		return -1, err
-	}
-
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return -1, err
-	}
-	log.Info(rowsAffected)
-
-	if rowsAffected == 0 {
-		return -1, sql.ErrNoRows
-	}
-
-	LastInsertId, err := res.LastInsertId()
-	if err != nil {
-		return -1, err
-	}
-
-	return LastInsertId, nil
+	return u.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.Name, &user.Email, &user.Dept, &user.Mobile)
 }
 
 func (u UserModel) Get(id int64) (*User, error) {
 	query := `SELECT id, college_id, name, email, mobile, dept, avatar, tasks_completed, earned, rating, created_at, version
 	FROM users
-	WHERE id=?
+	WHERE id=$1
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
@@ -103,7 +82,7 @@ func (u UserModel) Get(id int64) (*User, error) {
 func (u UserModel) GetUserByEmail(email string) (*User, error) {
 	query := `SELECT id, college_id, name, email, mobile, dept, avatar, tasks_completed, earned, rating, created_at, version
 	FROM users
-	WHERE email=?
+	WHERE email=$1
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
@@ -133,10 +112,11 @@ func (u UserModel) GetUserByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-func (u UserModel) Update(user *User) (int64, error) {
+func (u UserModel) Update(user *User) error {
 	query := `UPDATE users 
-	SET college_id=?, name=?, email=?, mobile=?, dept=?, avatar=?, version=version+1
-	WHERE id=? AND version=?
+	SET college_id=$1, name=$2, email=$3, mobile=$4, dept=$5, avatar=$6, version=version+1
+	WHERE id=$7 AND version=$8
+	RETURNING id
 	`
 
 	args := []interface{}{
@@ -153,45 +133,34 @@ func (u UserModel) Update(user *User) (int64, error) {
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	res, err := u.DB.ExecContext(ctx, query, args...)
+	err := u.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return 0, ErrEditConflict
+			return ErrEditConflict
 		default:
-			return 0, err
+			return err
 		}
 	}
 
-	RowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-	return RowsAffected, nil
+	return nil
 }
 
-func (u UserModel) Delete(id int64) (int64, error) {
+func (u UserModel) Delete(id int64) error {
 	query := `
-	DELETE FROM users WHERE id=?
+	DELETE FROM users WHERE id=$1
+	RETURNING id
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	res, err := u.DB.ExecContext(ctx, query, id)
+	err := u.DB.QueryRowContext(ctx, query, id).Scan(&id)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
+	return nil
 
-	if rowsAffected == 0 {
-		return 0, ErrRecordNotFound
-	}
-
-	return rowsAffected, nil
 }
 
 func (u UserModel) GetAllInCollege(name string, college_id int64, filters Filters) ([]*User, Metadata, error) {
@@ -199,10 +168,10 @@ func (u UserModel) GetAllInCollege(name string, college_id int64, filters Filter
 	SELECT COUNT(*) OVER () AS total,
 	id, college_id, name, dept, avatar, rating
 	FROM users
-	WHERE LOWER(name) LIKE LOWER(CONCAT('%', ? ,'%'))
-	AND college_id=?
+	WHERE name ILIKE '%' || $1 || '%'
+	AND college_id=$2
 	ORDER BY ` + filters.sortColumn() + " " + filters.sortDirection() + `, id ASC
-	LIMIT ? OFFSET ?;
+	LIMIT $3 OFFSET $4;
 	`)
 
 	ctx, cancel := handlectx()

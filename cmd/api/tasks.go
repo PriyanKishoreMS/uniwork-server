@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 	"github.com/priyankishorems/uniwork-server/internal/data"
 )
 
@@ -42,13 +41,13 @@ func (app *application) addNewTaskHandler(c echo.Context) error {
 		return err
 	}
 
-	id, err := app.models.Tasks.Create(input)
+	err = app.models.Tasks.Create(input)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
-	c.JSON(http.StatusCreated, envelope{"created": fmt.Sprintf("Row created with ID: %d", id)})
+	c.JSON(http.StatusCreated, envelope{"created": fmt.Sprintf("Row created with ID: %d", input.ID)})
 
 	return nil
 }
@@ -90,13 +89,13 @@ func (app *application) deleteTaskHandler(c echo.Context) error {
 		return ErrUserUnauthorized
 	}
 
-	rowsAffected, err := app.models.Tasks.Delete(id)
+	err = app.models.Tasks.Delete(id)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
-	return c.JSON(http.StatusOK, envelope{"deleted": fmt.Sprintf("%d row deleted successfully", rowsAffected)})
+	return c.JSON(http.StatusOK, envelope{"deleted": fmt.Sprintf("Row deleted with ID: %d", id)})
 }
 
 func (app *application) listAllTasksHandler(c echo.Context) error {
@@ -109,20 +108,21 @@ func (app *application) listAllTasksHandler(c echo.Context) error {
 
 	qs := c.Request().URL.Query()
 	input.Category = app.readStringQuery(qs, "category", "")
-	log.Info("Category here: ", input.Category)
 	input.Filters.Page = app.readIntQuery(qs, "page", 1)
 	input.Filters.PageSize = app.readIntQuery(qs, "page_size", 10)
 	input.Filters.Sort = app.readStringQuery(qs, "sort", "id")
 
 	input.Filters.SortSafelist = []string{"id", "name", "-id", "-name", "rating", "-rating", "price", "-price", "created_at", "-created_at", "expiry", "-expiry"}
 
-	categoryList := strings.Split(input.Category, ",")
+	if input.Category != "" {
+		categoryList := strings.Split(input.Category, ",")
 
-	for _, category := range categoryList {
-		category = strings.Trim(category, `"`)
-		if !slices.Contains(data.TaskCategories, category) {
-			app.BadRequest(c, ErrInvalidQuery)
-			return ErrInvalidQuery
+		for _, category := range categoryList {
+			category = strings.Trim(category, `'`)
+			if !slices.Contains(data.TaskCategories, category) {
+				app.BadRequest(c, ErrInvalidQuery)
+				return ErrInvalidQuery
+			}
 		}
 	}
 

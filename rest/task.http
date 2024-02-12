@@ -1,7 +1,7 @@
 @host = http://localhost:3000
 
-@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDc1MDM1MzQuODAxMDQ1NCwiaWF0IjoxNzA3NDE3MTM0LjgwMTA0NDIsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiI1IiwidHlwZSI6ImFjY2VzcyJ9.lg5FeA1eqBZ_8Ald_a0J2hO-K_xaezLMPXCNuagY8X8
-@refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTAwMDkxMzQuODAxMTU3NSwiaWF0IjoxNzA3NDE3MTM0LjgwMTE1NjUsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiI1IiwidHlwZSI6InJlZnJlc2gifQ.jEu_LqKwLWegZUijpUtioT-rmSfTO8Q5Rwlg1KVUUBE
+@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDc4NDg2MDUuMDgxMDc1LCJpYXQiOjE3MDc3NjIyMDUuMDgxMDc0LCJpc3MiOiJnaXRodWIuY29tL3ByaXlhbmtpc2hvcmVtcy91bml3b3JrIiwic3ViIjoiOSIsInR5cGUiOiJhY2Nlc3MifQ.CtcXXnm-Qx-aXi-b_dqdngzV0MN0_SB5UFzXs_DeXSA
+@refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTAzNTQyMDUuMDgxMTM4NCwiaWF0IjoxNzA3NzYyMjA1LjA4MTEzNzcsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiI5IiwidHlwZSI6InJlZnJlc2gifQ.en0b_7ryEzpxwPcthIQjPwgKKgptZHFWE-fCBdTTRVQ"
 
 ###
 post {{host}}/task
@@ -9,22 +9,22 @@ Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-    "title": "Document Printing for review 2",
+    "title": "Academic problem pls help",
     "description": "Print this for review",
-    "category": "Document Printing",
+    "category": "bruhh",
     "Price": 100,
     "status": "open",
-    "images": ["https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"]
+    "images": ["https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png", "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"]
 }
 
 ###
-get {{host}}/task/1
+get {{host}}/task/5
 Authorization: Bearer {{accessToken}}
 
 ###
-delete {{host}}/task/3
+get {{host}}/task?category='Academic Assistance','Document Printing'&sort=-created_at
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task?category="Fashion","Document Printing"&page_size=2&page=2&sort=-rating
+delete {{host}}/task/5
 Authorization: Bearer {{accessToken}}

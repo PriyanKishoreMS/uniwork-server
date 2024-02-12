@@ -19,16 +19,16 @@ psql:
 down:
 	@docker compose down	
 
-dsn := $(shell cat dsn.txt)
+dsn := $(shell cat dsnpsql.txt)
 
 goose_create:
-	@goose -s -dir='./migrations' mysql "${dsn}" create "${fn}" sql
+	@goose -s -dir='./migrations' postgres "${dsn}" create "${fn}" sql
 
 goose_one:
-	@goose -dir='./migrations' mysql "${dsn}" up-by-one
+	@goose -dir='./migrations' postgres "${dsn}" up-by-one
 
 goose_down:
-	@goose -dir='./migrations' mysql "${dsn}" down
+	@goose -dir='./migrations' postgres "${dsn}" down
 
 goose_up:
-	@goose -dir='./migrations' mysql "${dsn}" up
+	@goose -dir='./migrations' postgres "${dsn}" up

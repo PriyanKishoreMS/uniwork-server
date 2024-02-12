@@ -54,7 +54,7 @@ func main() {
 	flag.Parse()
 	log.SetHeader("${time_rfc3339} ${level}")
 
-	dbType := MySQLDB{}
+	dbType := PSQLDB{}
 	db, err := dbType.Open(cfg)
 	if err != nil {
 		log.Fatalf("error in opening db; %v", err)

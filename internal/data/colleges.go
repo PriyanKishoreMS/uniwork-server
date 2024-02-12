@@ -17,9 +17,10 @@ type CollegeModel struct {
 	DB *sql.DB
 }
 
-func (c CollegeModel) Create(college *College) (int64, error) {
+func (c CollegeModel) Create(college *College) error {
 	query := `INSERT INTO colleges (name, domain)
-	VALUES(?, ?)
+	VALUES($1, $2)
+	RETURNING id
 	`
 
 	args := []interface{}{
@@ -30,32 +31,14 @@ func (c CollegeModel) Create(college *College) (int64, error) {
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	res, err := c.DB.ExecContext(ctx, query, args...)
-	if err != nil {
-		return 0, err
-	}
+	return c.DB.QueryRowContext(ctx, query, args...).Scan(&college.ID)
 
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-
-	if rowsAffected == 0 {
-		return 0, sql.ErrNoRows
-	}
-
-	LastInsertId, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return LastInsertId, nil
 }
 
 func (c CollegeModel) Get(id int64) (*College, error) {
 	query := `SELECT id, name, domain, version
 	FROM colleges
-	WHERE id=?
+	WHERE id=$1
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
@@ -77,11 +60,12 @@ func (c CollegeModel) Get(id int64) (*College, error) {
 	return &college, nil
 }
 
-func (c CollegeModel) Update(college *College) (int64, error) {
+func (c CollegeModel) Update(college *College) error {
 
 	query := `UPDATE colleges 
-	SET name=?, domain=?, version=version+1
-	WHERE id=? AND version=?
+	SET name=$1, domain=$2, version=version+1
+	WHERE id=$3 AND version=$4
+	RETURNING id
 	`
 
 	args := []interface{}{
@@ -94,45 +78,34 @@ func (c CollegeModel) Update(college *College) (int64, error) {
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	res, err := c.DB.ExecContext(ctx, query, args...)
+	err := c.DB.QueryRowContext(ctx, query, args...).Scan(&college.ID)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return 0, ErrEditConflict
+			return ErrEditConflict
 		default:
-			return 0, err
+			return err
 		}
 	}
 
-	RowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-	return RowsAffected, nil
+	return nil
+
 }
 
-func (c CollegeModel) Delete(id int64) (int64, error) {
+func (c CollegeModel) Delete(id int64) error {
 	query := `
-	DELETE FROM colleges WHERE id=?
+	DELETE FROM colleges WHERE id=$1
+	RETURNING id
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	res, err := c.DB.ExecContext(ctx, query, id)
+	err := c.DB.QueryRowContext(ctx, query, id).Scan(&id)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-
-	if rowsAffected == 0 {
-		return 0, ErrRecordNotFound
-	}
-
-	return rowsAffected, nil
+	return nil
 }
 
 func (c CollegeModel) GetAll(name string, filters Filters) ([]*College, Metadata, error) {
@@ -140,9 +113,9 @@ func (c CollegeModel) GetAll(name string, filters Filters) ([]*College, Metadata
 	SELECT COUNT(*) OVER () AS total,
 	id, name, domain, version
 	FROM colleges
-	WHERE LOWER(name) LIKE LOWER(CONCAT('%', ? ,'%'))
+	WHERE name ILIKE '%' || $1 || '%' 
 	ORDER BY ` + filters.sortColumn() + " " + filters.sortDirection() + `, id ASC
-	LIMIT ? OFFSET ?;
+	LIMIT $2 OFFSET $3;
 	`)
 
 	ctx, cancel := handlectx()

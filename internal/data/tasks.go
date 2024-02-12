@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/labstack/gommon/log"
+	"github.com/lib/pq"
 )
 
 type Task struct {
@@ -44,13 +44,12 @@ type TaskModel struct {
 	DB *sql.DB
 }
 
-func (t TaskModel) Create(task *Task) (int64, error) {
+func (t TaskModel) Create(task *Task) error {
 	query := `
 	INSERT INTO tasks (user_id, college_id, title, description, category, price, status, expiry, images)
-	VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+	VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	RETURNING id
 	`
-	imagesCSV := strings.Join(task.Images, ",")
-	log.Info(imagesCSV)
 
 	args := []interface{}{
 		task.UserID,
@@ -61,39 +60,20 @@ func (t TaskModel) Create(task *Task) (int64, error) {
 		task.Price,
 		task.Status,
 		task.Expiry,
-		imagesCSV,
+		pq.Array(task.Images),
 	}
 
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	res, err := t.DB.ExecContext(ctx, query, args...)
-	if err != nil {
-		return -1, err
-	}
+	return t.DB.QueryRowContext(ctx, query, args...).Scan(&task.ID)
 
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return -1, err
-	}
-	log.Info(rowsAffected)
-
-	if rowsAffected == 0 {
-		return -1, sql.ErrNoRows
-	}
-
-	LastInsertId, err := res.LastInsertId()
-	if err != nil {
-		return -1, err
-	}
-
-	return LastInsertId, nil
 }
 
 func (t TaskModel) Get(id int64) (*Task, error) {
 	query := `SELECT id, user_id, college_id, title, description, category, price, status, created_at, Expiry, Images
 	FROM tasks
-	WHERE id=?
+	WHERE id=$1
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
@@ -125,27 +105,21 @@ func (t TaskModel) Get(id int64) (*Task, error) {
 	return &task, nil
 }
 
-func (t TaskModel) Delete(id int64) (int64, error) {
-	query := `DELETE FROM tasks WHERE id=?`
+func (t TaskModel) Delete(id int64) error {
+	query := `DELETE FROM tasks WHERE id=$1
+	RETURNING id
+	`
 
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	res, err := t.DB.ExecContext(ctx, query, id)
+	err := t.DB.QueryRowContext(ctx, query, id).Scan(&id)
 	if err != nil {
-		return -1, err
+		return err
 	}
 
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return -1, err
-	}
+	return nil
 
-	if rowsAffected == 0 {
-		return -1, ErrRecordNotFound
-	}
-
-	return rowsAffected, nil
 }
 
 func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filters Filters) ([]*TaskWithUser, Metadata, error) {
@@ -157,10 +131,10 @@ func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filte
 		tasks.id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
 		FROM tasks
 		INNER JOIN users ON users.id=tasks.user_id
-		WHERE tasks.college_id=?
+		WHERE tasks.college_id=$1
 		AND tasks.status='open'
 		ORDER BY %s %s, id ASC
-		LIMIT ? OFFSET ?;
+		LIMIT $2 OFFSET $3;
 		`, filters.sortColumn(), filters.sortDirection())
 	} else {
 		query = fmt.Sprintf(`
@@ -169,11 +143,11 @@ func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filte
 	tasks.id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
 	FROM tasks
 	INNER JOIN users ON users.id=tasks.user_id	
-	WHERE tasks.college_id=?
+	WHERE tasks.college_id=$1
 	AND tasks.category IN (%s)
 	AND tasks.status='open'
 	ORDER BY %s %s, id ASC
-	LIMIT ? OFFSET ?;
+	LIMIT $2 OFFSET $3;
 	`, category, filters.sortColumn(), filters.sortDirection())
 	}
 

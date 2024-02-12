@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
+	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 	"github.com/priyankishorems/uniwork-server/internal/data"
 )
 
@@ -29,38 +30,30 @@ func (app *application) registerUserHandler(c echo.Context) error {
 		return err
 	}
 
-	id, err := app.models.Users.Register(user)
+	err = app.models.Users.Register(user)
 	if err != nil {
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
-			switch mysqlErr.Number {
-			case 1062:
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code {
+			case "23505":
 				{
-					app.CustomErrorResponse(c, envelope{
-						"duplicate": "duplicate entry",
-					}, http.StatusConflict, err)
+					app.CustomErrorResponse(c, envelope{"message": "duplicate entry"}, http.StatusConflict, err)
 					return err
 				}
-			case 1452:
+			case "23503":
 				{
-					app.CustomErrorResponse(c, envelope{
-						"not found": "college not found",
-					}, http.StatusNotFound, err)
+					app.CustomErrorResponse(c, envelope{"message": "college not found"}, http.StatusNotFound, err)
 					return err
 				}
 			default:
-				app.InternalServerError(c, err)
-				return err
+				{
+					app.InternalServerError(c, err)
+					return err
+				}
 			}
 		}
 	}
 
-	accessToken, RefreshToken, err := data.GenerateAuthTokens(id, app.config.jwt.secret, app.config.jwt.issuer)
-	if err != nil {
-		app.InternalServerError(c, err)
-		return err
-	}
-
-	data, err := app.models.Users.Get(id)
+	accessToken, RefreshToken, err := data.GenerateAuthTokens(user.ID, app.config.jwt.secret, app.config.jwt.issuer)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
@@ -71,7 +64,7 @@ func (app *application) registerUserHandler(c echo.Context) error {
 		"refreshToken": string(RefreshToken),
 	}
 
-	return c.JSON(http.StatusOK, envelope{"authTokens": authTokens, "data": data})
+	return c.JSON(http.StatusOK, envelope{"authTokens": authTokens, "data": user})
 }
 
 func (app *application) getUserHandler(c echo.Context) error {
@@ -131,7 +124,7 @@ func (app *application) updateUserHandler(c echo.Context) error {
 		return err
 	}
 
-	res, err := app.models.Users.Update(user)
+	err = app.models.Users.Update(user)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrEditConflict):
@@ -143,21 +136,21 @@ func (app *application) updateUserHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": fmt.Sprint(res, " row updated successfully"),
+		"message": fmt.Sprintf("row updated successfully with id: %d", user.ID),
 	})
 }
 
 func (app *application) deleteUserHandler(c echo.Context) error {
 	user := app.contextGetUser(c)
 
-	res, err := app.models.Users.Delete(user.ID)
+	err := app.models.Users.Delete(user.ID)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": fmt.Sprint(res, " row deleted successfully"),
+		"message": fmt.Sprintf("row deleted successfully with id: %d", user.ID),
 	})
 }
 

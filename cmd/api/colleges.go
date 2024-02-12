@@ -7,7 +7,6 @@ import (
 	"slices"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 	"github.com/priyankishorems/uniwork-server/internal/data"
 )
 
@@ -25,14 +24,14 @@ func (app *application) createCollegeHandler(c echo.Context) error {
 		return err
 	}
 
-	res, err := app.models.Colleges.Create(clg)
+	err = app.models.Colleges.Create(clg)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
 	return c.JSON(http.StatusCreated, map[string]interface{}{
-		"message": fmt.Sprint("row created successfully with id: ", res),
+		"message": fmt.Sprint("row created successfully with id: ", clg.ID),
 	})
 }
 
@@ -86,7 +85,7 @@ func (app *application) updateCollegeHandler(c echo.Context) error {
 		return err
 	}
 
-	res, err := app.models.Colleges.Update(college)
+	err = app.models.Colleges.Update(college)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrEditConflict):
@@ -98,7 +97,7 @@ func (app *application) updateCollegeHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": fmt.Sprint(res, " row updated successfully"),
+		"message": fmt.Sprint("row updated successfully with id: ", college.ID),
 	})
 }
 
@@ -109,14 +108,14 @@ func (app *application) deleteCollegeHandler(c echo.Context) error {
 		return err
 	}
 
-	res, err := app.models.Colleges.Delete(id)
+	err = app.models.Colleges.Delete(id)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": fmt.Sprint(res, " row deleted successfully"),
+		"message": fmt.Sprint("row deleted successfully with id: ", id),
 	})
 }
 
@@ -125,9 +124,6 @@ func (app *application) listAllCollegesHandler(c echo.Context) error {
 		Name string
 		data.Filters
 	}
-
-	user := app.contextGetUser(c)
-	log.Info("user: ", user)
 
 	qs := c.Request().URL.Query()
 	input.Name = app.readStringQuery(qs, "name", "")

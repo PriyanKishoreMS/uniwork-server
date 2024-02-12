@@ -11,6 +11,7 @@ import (
 	_ "github.com/jackc/pgx/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/gommon/log"
+	_ "github.com/lib/pq"
 )
 
 type Database interface {
@@ -75,7 +76,7 @@ func (m PSQLDB) Open(cfg Config) (*sql.DB, error) {
 	}
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", c.host, c.username, c.pwd, c.database, c.port)
-	db, err := sql.Open("pgx", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS tasks (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY UNIQUE,
+    id BIGSERIAL PRIMARY KEY UNIQUE,
     user_id BIGINT NOT NULL,
     college_id BIGINT NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -9,26 +9,25 @@ CREATE TABLE IF NOT EXISTS tasks (
     category VARCHAR(255) NOT NULL,
     price BIGINT,
     status VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expiry DATETIME,
-    images TEXT,
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    expiry TIMESTAMP,
+    images TEXT[],
     version INT NOT NULL DEFAULT 1,
-    CONSTRAINT task_user_fk FOREIGN KEY (user_id) REFERENCES users(id),
-    CONSTRAINT task_clg_fk FOREIGN KEY (college_id) REFERENCES colleges(id),
-    INDEX (user_id),
-    INDEX (college_id)
+    CONSTRAINT task_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT task_clg_fk FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE CASCADE
 );
 -- +goose StatementEnd
 
+-- +goose StatementBegin
+CREATE INDEX idx_tasks_user_id ON tasks(user_id);
+CREATE INDEX idx_tasks_college_id ON tasks(college_id);
+-- +goose StatementEnd
+
+
+
+
 
 -- +goose Down
--- +goose StatementBegin
-ALTER TABLE tasks DROP FOREIGN KEY task_user_fk;
--- +goose StatementEnd
-
--- +goose StatementBegin
-ALTER TABLE tasks DROP FOREIGN KEY task_clg_fk;
--- +goose StatementEnd
 
 -- +goose StatementBegin
 DROP TABLE IF EXISTS tasks;
