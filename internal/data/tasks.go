@@ -169,7 +169,6 @@ func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filte
 
 	totalRecords := 0
 	tasks := []*TaskWithUser{}
-	var imagesCSV string
 
 	for rows.Next() {
 		var task TaskWithUser
@@ -185,7 +184,7 @@ func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filte
 			&task.Status,
 			&task.CreatedAt,
 			&task.Expiry,
-			&imagesCSV,
+			pq.Array(&task.Images),
 			&task.UserName,
 			&task.UserAvatar,
 			&task.UserRating,
@@ -194,7 +193,6 @@ func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filte
 			return nil, Metadata{}, err
 		}
 
-		task.Images = strings.Split(imagesCSV, ",")
 		tasks = append(tasks, &task)
 	}
 

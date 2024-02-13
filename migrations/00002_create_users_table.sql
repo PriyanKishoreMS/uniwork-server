@@ -15,14 +15,10 @@ CREATE TABLE IF NOT EXISTS users (
     version INT NOT NULL DEFAULT 1,
     CONSTRAINT user_clg_fk FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE CASCADE
 );
--- +goose StatementEnd
 
--- +goose StatementBegin
-CREATE INDEX idx_users_college_id ON users(college_id);
-CREATE INDEX idx_users_name ON users(name);
--- +goose StatementEnd
+CREATE INDEX IF NOT EXISTS idx_users_college_id ON users(college_id);
+CREATE INDEX IF NOT EXISTS idx_users_name ON users(name);
 
--- +goose StatementBegin
 INSERT INTO users (college_id, name, email, dept, mobile)
 VALUES
 (1, 'Priyan Kishore', '20113022@student.hindustanuniv.ac.in', 'Computer Science', '7010376477'),
@@ -37,9 +33,6 @@ VALUES
 
 
 -- +goose Down
--- -- +goose StatementBegin
--- ALTER TABLE users DROP FOREIGN KEY user_clg_fk;
--- -- +goose StatementEnd
 -- +goose StatementBegin
 DROP TABLE IF EXISTS users;
 -- +goose StatementEnd
