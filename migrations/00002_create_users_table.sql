@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE INDEX IF NOT EXISTS idx_users_college_id ON users(college_id);
-CREATE INDEX IF NOT EXISTS idx_users_name ON users(name);
+CREATE INDEX idx_users_college_id ON users(college_id);
+CREATE INDEX idx_users_name ON users(name);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
@@ -30,6 +30,8 @@ VALUES
 (6, 'Laksitha Bharani', 'laksitha2004@gmail.com', 'MBBS', '6380886960'),
 (3, 'Test User', 'testuser@college.ac.in', 'Test Dept', '1234567890');
 -- +goose StatementEnd
+
+
 
 
 

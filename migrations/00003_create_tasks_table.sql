@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS tasks (
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
-CREATE INDEX IF NOT EXISTS idx_tasks_college_id ON tasks(college_id);
+CREATE INDEX idx_tasks_user_id ON tasks(user_id);
+CREATE INDEX idx_tasks_college_id ON tasks(college_id);
 -- +goose StatementEnd
 
 
