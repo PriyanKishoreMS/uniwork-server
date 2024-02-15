@@ -10,7 +10,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-type FirebaseUtils struct {
+type Firebase struct {
 	App  *firebase.App
 	Auth *auth.Client
 }
@@ -24,7 +24,7 @@ type FcmModel struct {
 	DB *sql.DB
 }
 
-func NewFirebaseUtil() (*FirebaseUtils, error) {
+func NewFirebaseIntegration() (*Firebase, error) {
 	ctx := context.Background()
 	opt := []option.ClientOption{option.WithCredentialsFile("./serviceAccountKey.json")}
 	app, err := firebase.NewApp(context.Background(), nil, opt...)
@@ -37,7 +37,7 @@ func NewFirebaseUtil() (*FirebaseUtils, error) {
 		return nil, fmt.Errorf("error initializing auth: %v", err)
 	}
 
-	return &FirebaseUtils{
+	return &Firebase{
 		App:  app,
 		Auth: authClient,
 	}, err

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/jackc/pgx/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/gommon/log"
 	_ "github.com/lib/pq"

@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"firebase.google.com/go/messaging"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/gommon/log"
 	"github.com/priyankishorems/uniwork-server/internal/data"
@@ -33,6 +35,7 @@ type application struct {
 	validate validator.Validate
 	// fb       data.FirebaseUtils
 	fcmClient *messaging.Client
+	awsS3     *data.S3
 	// wg       sync.WaitGroup
 }
 
@@ -63,21 +66,28 @@ func main() {
 
 	validate = *validator.New()
 
-	firebaseUtil, err := data.NewFirebaseUtil()
+	firebase, err := data.NewFirebaseIntegration()
 	if err != nil {
 		log.Fatalf("error in firebase util: %v", err)
 	}
 
-	fcmClient, err := firebaseUtil.App.Messaging(context.Background())
+	fcmClient, err := firebase.App.Messaging(context.Background())
 	if err != nil {
 		log.Fatalf("error in initializing fcmclient: %v", err)
 	}
+
+	s3cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		log.Fatalf("error in loading aws config: %v", err)
+	}
+	client := s3.NewFromConfig(s3cfg)
 
 	app := &application{
 		config:    cfg,
 		models:    data.NewModel(db),
 		validate:  validate,
 		fcmClient: fcmClient,
+		awsS3:     data.NewS3(client),
 	}
 	e := app.routes()
 	e.Server.ReadTimeout = time.Second * 10
