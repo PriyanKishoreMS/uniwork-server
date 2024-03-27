@@ -1,12 +1,17 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -14,6 +19,8 @@ import (
 )
 
 type envelope map[string]interface{}
+
+var uploadDir string = "./public"
 
 // func (app *application) background(fn func()) {
 // 	app.wg.Add(1)
@@ -90,6 +97,40 @@ func (app *application) readJSON(c echo.Context, dst interface{}) error {
 	}
 	return nil
 }
+func (app *application) readFormData(c echo.Context, dst interface{}) error {
+	err := c.Request().ParseMultipartForm(10 << 20)
+	if err != nil {
+		return fmt.Errorf("failed to parse multipart form: %v", err)
+	}
+
+	dstValue := reflect.ValueOf(dst).Elem()
+	dstType := dstValue.Type()
+
+	for i := 0; i < dstValue.NumField(); i++ {
+		field := dstType.Field(i)
+		fieldValue := dstValue.Field(i)
+		formValue := c.FormValue(strings.ToLower(field.Name))
+
+		if fieldValue.CanSet() {
+			switch fieldValue.Kind() {
+			case reflect.String:
+				fieldValue.SetString(formValue)
+			case reflect.Int64:
+				if formValue == "" {
+					fieldValue.SetInt(0)
+				} else {
+					value, err := convertToInt64(formValue)
+					if err != nil {
+						return fmt.Errorf("invalid value for field %s: %v", field.Name, err)
+					}
+					fieldValue.SetInt(value)
+				}
+			}
+		}
+	}
+
+	return nil
+}
 
 func (app *application) readStringQuery(qs url.Values, key string, defaultValue string) string {
 
@@ -120,4 +161,41 @@ func updateField[T any](user *T, input *T) {
 	if input != nil {
 		*user = *input
 	}
+}
+
+func (app *application) HandleFiles(c echo.Context, key string, userID int64, collegeID int64) ([]string, error) {
+	files := c.Request().MultipartForm.File[key]
+	if len(files) == 0 {
+		return []string{}, nil
+	}
+	filePaths := []string{}
+	uploadDir := uploadDir + "/" + key
+	fmt.Println(uploadDir, "uploadDir")
+
+	for _, fileHeader := range files {
+		file, err := fileHeader.Open()
+
+		if err != nil {
+			return []string{}, err
+		}
+		defer file.Close()
+
+		b := make([]byte, 4)
+		rand.Read(b)
+		suffix := hex.EncodeToString(b)
+		filename := fmt.Sprintf("%d_%d_%s%s", userID, collegeID, suffix, filepath.Ext(fileHeader.Filename))
+
+		dst, err := os.Create(filepath.Join(uploadDir, filename))
+		if err != nil {
+			return []string{}, err
+		}
+		defer dst.Close()
+		filePaths = append(filePaths, uploadDir[1:]+"/"+filename)
+
+		_, err = io.Copy(dst, file)
+		if err != nil {
+			return []string{}, err
+		}
+	}
+	return filePaths, nil
 }

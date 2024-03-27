@@ -3,24 +3,24 @@ package data
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/lib/pq"
 )
 
 type Task struct {
-	ID          int64     `json:"id"`
-	UserID      int64     `json:"user_id" validate:"required"`
-	CollegeID   int64     `json:"college_id" validate:"required"`
-	Title       string    `json:"title" validate:"required"`
-	Description string    `json:"description"`
-	Category    string    `json:"category" validate:"required"`
-	Price       int64     `json:"price" validate:"required"`
-	Status      string    `json:"status" validate:"required"`
-	CreatedAt   time.Time `json:"time"`
-	Expiry      time.Time `json:"expiry" validate:"required"`
-	Images      []string  `json:"images,omitempty"`
+	ID          int64     `form:"id"`
+	UserID      int64     `form:"user_id" validate:"required"`
+	CollegeID   int64     `form:"college_id" validate:"required"`
+	Title       string    `form:"title" validate:"required"`
+	Description string    `form:"description"`
+	Category    string    `form:"category" validate:"required"`
+	Price       int64     `form:"price" validate:"required"`
+	Status      string    `form:"status" validate:"required"`
+	CreatedAt   time.Time `form:"time"`
+	Expiry      time.Time `form:"expiry" validate:"required"`
+	Images      []string  `form:"images,omitempty"`
+	Files       []string  `form:"files,omitempty"`
 }
 
 type TaskWithUser struct {
@@ -46,8 +46,8 @@ type TaskModel struct {
 
 func (t TaskModel) Create(task *Task) error {
 	query := `
-	INSERT INTO tasks (user_id, college_id, title, description, category, price, status, expiry, images)
-	VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	INSERT INTO tasks (user_id, college_id, title, description, category, price, status, expiry, images, files)
+	VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	RETURNING id
 	`
 
@@ -61,6 +61,7 @@ func (t TaskModel) Create(task *Task) error {
 		task.Status,
 		task.Expiry,
 		pq.Array(task.Images),
+		pq.Array(task.Files),
 	}
 
 	ctx, cancel := handlectx()
@@ -79,7 +80,6 @@ func (t TaskModel) Get(id int64) (*Task, error) {
 	defer cancel()
 
 	var task Task
-	var imagesCSV string
 
 	dest := []interface{}{
 		&task.ID,
@@ -92,15 +92,13 @@ func (t TaskModel) Get(id int64) (*Task, error) {
 		&task.Status,
 		&task.CreatedAt,
 		&task.Expiry,
-		&imagesCSV,
+		pq.Array(&task.Images),
 	}
 
 	err := t.DB.QueryRowContext(ctx, query, id).Scan(dest...)
 	if err != nil {
 		return nil, err
 	}
-
-	task.Images = strings.Split(imagesCSV, ",")
 
 	return &task, nil
 }

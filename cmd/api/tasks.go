@@ -20,7 +20,7 @@ func (app *application) addNewTaskHandler(c echo.Context) error {
 	input := new(data.Task)
 	user := app.contextGetUser(c)
 
-	err := app.readJSON(c, &input)
+	err := app.readFormData(c, input)
 	if err != nil {
 		app.BadRequest(c, err)
 		return err
@@ -40,6 +40,22 @@ func (app *application) addNewTaskHandler(c echo.Context) error {
 		app.CustomErrorResponse(c, envelope{"invalid": "Invalid category"}, http.StatusBadRequest, ErrInvalidQuery)
 		return err
 	}
+
+	imageURLs, err := app.HandleFiles(c, "images", user.ID, user.CollegeID)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+
+	fileURLs, err := app.HandleFiles(c, "files", user.ID, user.CollegeID)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+
+	input.Images = imageURLs
+	input.Files = fileURLs
+	// app.awsS3.UploadFile(c.Request().Context(), "uniwork", file.Filename, os.NewFile(0, file.Filename))
 
 	err = app.models.Tasks.Create(input)
 	if err != nil {

@@ -66,6 +66,38 @@ func (app *application) registerUserHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, envelope{"authTokens": authTokens, "data": user})
 }
 
+func (app *application) loginUserHandler(c echo.Context) error {
+	var input struct {
+		Email string `json:"email" validate:"required,email"`
+	}
+
+	err := app.readJSON(c, &input)
+	if err != nil {
+		app.BadRequest(c, err)
+		return err
+	}
+
+	user, err := app.models.Users.GetUserByEmail(input.Email)
+	if err != nil {
+		app.NotFoundResponse(c)
+		return err
+	}
+
+	accessToken, RefreshToken, err := data.GenerateAuthTokens(user.ID, app.config.jwt.secret, app.config.jwt.issuer)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+
+	data := envelope{
+		"accessToken":  string(accessToken),
+		"refreshToken": string(RefreshToken),
+		"data":         user,
+	}
+
+	return c.JSON(http.StatusOK, data)
+}
+
 func (app *application) getUserHandler(c echo.Context) error {
 	id, err := app.readIntParam(c, "id")
 	if err != nil {

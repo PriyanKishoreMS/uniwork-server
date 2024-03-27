@@ -36,14 +36,14 @@ func GenerateAccessToken(id int64, secret []byte, issuer string) ([]byte, error)
 		return nil, err
 	}
 
-	return accessToken, err
+	return accessToken, nil
 }
 
 func GenerateRefreshToken(id int64, secret []byte, issuer string) ([]byte, error) {
 	var claims jwt.Claims
 	claims.Subject = strconv.FormatInt(id, 10)
 	claims.Issued = jwt.NewNumericTime(time.Now())
-	claims.Expires = jwt.NewNumericTime(time.Now().Add((time.Hour * 24) * 30))
+	claims.Expires = jwt.NewNumericTime(time.Now().Add((time.Hour * 24) * 90))
 	claims.Issuer = issuer
 	claims.Set = map[string]interface{}{
 		"type": "refresh",
@@ -54,5 +54,5 @@ func GenerateRefreshToken(id int64, secret []byte, issuer string) ([]byte, error
 		return nil, err
 	}
 
-	return refreshToken, err
+	return refreshToken, nil
 }

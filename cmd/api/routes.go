@@ -26,7 +26,9 @@ func (app *application) routes() *echo.Echo {
 
 	e.GET("/health", app.HealthCheckHandler)
 	e.POST("/user", app.registerUserHandler)
+	e.POST("/login", app.loginUserHandler)
 	e.POST("/security/refreshtoken", app.refreshTokenHandler)
+	e.Static("/public", uploadDir)
 
 	college := e.Group("/college", app.authenticate())
 	{

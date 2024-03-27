@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     expiry TIMESTAMP,
     images VARCHAR(512)[], 
+    files VARCHAR(512)[], 
     version INT NOT NULL DEFAULT 1,
     CONSTRAINT task_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT task_clg_fk FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE CASCADE
