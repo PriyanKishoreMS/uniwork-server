@@ -22,7 +22,7 @@ func (app *application) addNewTaskHandler(c echo.Context) error {
 
 	err := app.readFormData(c, input)
 	if err != nil {
-		app.BadRequest(c, err)
+		app.BadRequest(c, fmt.Errorf("error reading form data: %w", err))
 		return err
 	}
 
@@ -43,7 +43,7 @@ func (app *application) addNewTaskHandler(c echo.Context) error {
 
 	imageURLs, err := app.HandleFiles(c, "images", user.ID, user.CollegeID)
 	if err != nil {
-		app.InternalServerError(c, err)
+		app.InternalServerError(c, fmt.Errorf("error handling images: %w", err))
 		return err
 	}
 
@@ -59,7 +59,7 @@ func (app *application) addNewTaskHandler(c echo.Context) error {
 
 	err = app.models.Tasks.Create(input)
 	if err != nil {
-		app.InternalServerError(c, err)
+		app.InternalServerError(c, fmt.Errorf("error creating task: %w", err))
 		return err
 	}
 

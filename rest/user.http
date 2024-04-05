@@ -1,6 +1,6 @@
 @host = http://localhost:3000
 
-@accessToken= eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTE2MjQ4ODAuNTQ5Nzc0MiwiaWF0IjoxNzExNTM4NDgwLjU0OTc3NCwiaXNzIjoiZ2l0aHViLmNvbS9wcml5YW5raXNob3JlbXMvdW5pd29yayIsInN1YiI6IjEwIiwidHlwZSI6ImFjY2VzcyJ9.ZIROfB3AX1ckKCgulJhO62maSlX2n07_ThBCMEH0ld8
+@accessToken= eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTE3OTQ3OTEuMTQxNzEyNCwiaWF0IjoxNzExNzA4MzkxLjE0MTcxMTUsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMCIsInR5cGUiOiJhY2Nlc3MifQ.mFaZZqXjHLI6PjXhsuj175Fk0NDohEryFlpOm5eeDds
 @refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTg4OTE5MjUuMzQ0NDM2MiwiaWF0IjoxNzExMTE1OTI1LjM0NDQzNTcsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMCIsInR5cGUiOiJyZWZyZXNoIn0.jvMDlIyJapALk54ijYYCTiyottAPkmC2iVsbdD51-Tc
 ###
 get {{host}}/user
@@ -27,7 +27,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "name": "kabadi"
+    "name": "Priyan Kishore"
 }
 
 ###

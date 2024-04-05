@@ -6,3 +6,8 @@ dsn.txt
 dsnpsql.txt
 serviceAccountKey.json
 .aws/
+*.jpeg
+*.png
+*.jpg
+*.pdf
+*.docx

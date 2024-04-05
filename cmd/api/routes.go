@@ -20,6 +20,7 @@ func (app *application) HealthCheckHandler(c echo.Context) error {
 
 func (app *application) routes() *echo.Echo {
 	e := echo.New()
+	e.Use(middleware.CORS())
 	// e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(app.rateLimit())

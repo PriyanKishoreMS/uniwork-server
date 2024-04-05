@@ -22,6 +22,23 @@ type Task struct {
 	Images      []string  `form:"images,omitempty"`
 	Files       []string  `form:"files,omitempty"`
 }
+type GetTaskResponse struct {
+	ID          int64     `json:"id"`
+	UserID      int64     `json:"user_id"`
+	CollegeName string    `json:"college_name"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Category    string    `json:"category"`
+	Price       int64     `json:"price"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"time"`
+	Expiry      time.Time `json:"expiry"`
+	Images      []string  `json:"images,omitempty"`
+	Files       []string  `json:"files,omitempty"`
+	UserName    string    `json:"user_name"`
+	UserAvatar  string    `json:"user_avatar"`
+	UserRating  float64   `json:"user_rating"`
+}
 
 type TaskWithUser struct {
 	ID          int64     `json:"id"`
@@ -71,20 +88,36 @@ func (t TaskModel) Create(task *Task) error {
 
 }
 
-func (t TaskModel) Get(id int64) (*Task, error) {
-	query := `SELECT id, user_id, college_id, title, description, category, price, status, created_at, Expiry, Images
-	FROM tasks
-	WHERE id=$1
+func (t TaskModel) Get(id int64) (*GetTaskResponse, error) {
+	query := `SELECT
+  tasks.id,
+  tasks.user_id,
+  tasks.title,
+  tasks.description,
+  tasks.category,
+  tasks.price,
+  tasks.status,
+  tasks.created_at,
+  tasks.expiry,
+  tasks.images,
+  tasks.files,
+  users.name AS user_name,
+  users.avatar,
+  users.rating,
+  colleges.name AS college_name
+FROM tasks
+INNER JOIN users ON users.id = tasks.user_id
+INNER JOIN colleges ON colleges.id = tasks.college_id
+WHERE tasks.id = $1;
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	var task Task
+	var task GetTaskResponse
 
 	dest := []interface{}{
 		&task.ID,
 		&task.UserID,
-		&task.CollegeID,
 		&task.Title,
 		&task.Description,
 		&task.Category,
@@ -93,6 +126,11 @@ func (t TaskModel) Get(id int64) (*Task, error) {
 		&task.CreatedAt,
 		&task.Expiry,
 		pq.Array(&task.Images),
+		pq.Array(&task.Files),
+		&task.UserName,
+		&task.UserAvatar,
+		&task.UserRating,
+		&task.CollegeName,
 	}
 
 	err := t.DB.QueryRowContext(ctx, query, id).Scan(dest...)
@@ -122,6 +160,7 @@ func (t TaskModel) Delete(id int64) error {
 
 func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filters Filters) ([]*TaskWithUser, Metadata, error) {
 	var query string
+	fmt.Println(category, "this is the category")
 	if category == "" {
 		query = fmt.Sprintf(`
 		SELECT
@@ -142,7 +181,7 @@ func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filte
 	FROM tasks
 	INNER JOIN users ON users.id=tasks.user_id	
 	WHERE tasks.college_id=$1
-	AND tasks.category IN (%s)
+	AND tasks.category='%s'
 	AND tasks.status='open'
 	ORDER BY %s %s, id ASC
 	LIMIT $2 OFFSET $3;

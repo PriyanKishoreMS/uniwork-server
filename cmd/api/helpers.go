@@ -102,6 +102,7 @@ func (app *application) readFormData(c echo.Context, dst interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to parse multipart form: %v", err)
 	}
+	fmt.Println(c.FormValue("images"), "\nc.FormValue(images)")
 
 	dstValue := reflect.ValueOf(dst).Elem()
 	dstType := dstValue.Type()
@@ -165,9 +166,11 @@ func updateField[T any](user *T, input *T) {
 
 func (app *application) HandleFiles(c echo.Context, key string, userID int64, collegeID int64) ([]string, error) {
 	files := c.Request().MultipartForm.File[key]
+	fmt.Println(files, "\n\nfiles")
 	if len(files) == 0 {
 		return []string{}, nil
 	}
+	fmt.Println("\n\nHandleFiles")
 	filePaths := []string{}
 	uploadDir := uploadDir + "/" + key
 	fmt.Println(uploadDir, "uploadDir")
