@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     expiry TIMESTAMP,
     images VARCHAR(512)[], 
     files VARCHAR(512)[], 
+    -- scope VARCHAR(10) NOT NULL DEFAULT 'college',
+    -- req_users BIGINT[] NOT NULL DEFAULT '{}',
     version INT NOT NULL DEFAULT 1,
     CONSTRAINT task_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT task_clg_fk FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE CASCADE

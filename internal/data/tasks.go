@@ -165,7 +165,7 @@ func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filte
 		query = fmt.Sprintf(`
 		SELECT
 		COUNT(*) OVER () AS total,
-		tasks.id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
+		tasks.id, tasks.user_id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
 		FROM tasks
 		INNER JOIN users ON users.id=tasks.user_id
 		WHERE tasks.college_id=$1
@@ -177,7 +177,7 @@ func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filte
 		query = fmt.Sprintf(`
 	SELECT 
 	COUNT(*) OVER () AS total,
-	tasks.id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
+	tasks.id, tasks.user_id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
 	FROM tasks
 	INNER JOIN users ON users.id=tasks.user_id	
 	WHERE tasks.college_id=$1
@@ -213,6 +213,91 @@ func (t TaskModel) GetAllTasksInCollege(category string, college_id int64, filte
 		err := rows.Scan(
 			&totalRecords,
 			&task.ID,
+			&task.UserID,
+			&task.CollegeID,
+			&task.Title,
+			&task.Description,
+			&task.Category,
+			&task.Price,
+			&task.Status,
+			&task.CreatedAt,
+			&task.Expiry,
+			pq.Array(&task.Images),
+			&task.UserName,
+			&task.UserAvatar,
+			&task.UserRating,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		tasks = append(tasks, &task)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, Metadata{}, err
+	}
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return tasks, metadata, nil
+}
+
+func (t TaskModel) GetAllTasksOfUser(id int64, userType string, filters Filters) ([]*TaskWithUser, Metadata, error) {
+	var query string
+	if userType == "user" {
+		fmt.Println("user")
+		query = fmt.Sprintf(`
+	SELECT 
+	COUNT(*) OVER () AS total,
+	tasks.id, tasks.user_id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
+	FROM tasks
+	INNER JOIN users ON 
+	users.id=tasks.user_id	
+	WHERE tasks.user_id=$1
+	ORDER BY %s %s, id ASC
+	LIMIT $2 OFFSET $3;
+	`, filters.sortColumn(), filters.sortDirection())
+	} else if userType == "worker" {
+		fmt.Println("worker")
+		query = fmt.Sprintf(`
+	SELECT 
+	COUNT(*) OVER () AS total,
+	tasks.id, tasks.user_id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
+	FROM tasks
+	INNER JOIN users ON 
+	users.id=tasks.worker_id	
+	WHERE tasks.user_id=$1
+	ORDER BY %s %s, id ASC
+	LIMIT $2 OFFSET $3;
+	`, filters.sortColumn(), filters.sortDirection())
+	}
+
+	ctx, cancel := handlectx()
+	defer cancel()
+
+	args := []interface{}{
+		id,
+		filters.limit(),
+		filters.offset(),
+	}
+
+	rows, err := t.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	defer rows.Close()
+
+	totalRecords := 0
+	tasks := []*TaskWithUser{}
+
+	for rows.Next() {
+		var task TaskWithUser
+
+		err := rows.Scan(
+			&totalRecords,
+			&task.ID,
+			&task.UserID,
 			&task.CollegeID,
 			&task.Title,
 			&task.Description,

@@ -21,7 +21,15 @@ get {{host}}/task/47
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task?sort=-created_at&category=Fashion
+get {{host}}/task
+Authorization: Bearer {{accessToken}}
+
+###
+get {{host}}/task/user/10
+Authorization: Bearer {{accessToken}}
+
+###
+get {{host}}/task/worker/12
 Authorization: Bearer {{accessToken}}
 
 ###

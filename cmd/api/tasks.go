@@ -129,6 +129,9 @@ func (app *application) listAllTasksHandler(c echo.Context) error {
 	input.Filters.Sort = app.readStringQuery(qs, "sort", "id")
 
 	input.Filters.SortSafelist = []string{"id", "name", "-id", "-name", "rating", "-rating", "price", "-price", "created_at", "-created_at", "expiry", "-expiry"}
+	if input.Category == "All" {
+		input.Category = ""
+	}
 
 	if input.Category != "" {
 		categoryList := strings.Split(input.Category, ",")
@@ -156,9 +159,47 @@ func (app *application) listAllTasksHandler(c echo.Context) error {
 
 	res, metadata, err := app.models.Tasks.GetAllTasksInCollege(input.Category, int64(college_id), input.Filters)
 	if err != nil {
-		app.BadRequest(c, err)
+		app.InternalServerError(c, err)
 		return err
 	}
 
 	return c.JSON(http.StatusOK, envelope{"metadata": metadata, "data": res})
+}
+
+func (app *application) listAllTasksOfUserHandler(c echo.Context) error {
+	var uid int64
+	var userType string
+	if c.Path() == "/task/user/:uid" {
+		uid, _ = app.readIntParam(c, "uid")
+		userType = "user"
+		if uid == -1 {
+			app.BadRequest(c, ErrInvalidQuery)
+			return fmt.Errorf("invalid query")
+		}
+	} else if c.Path() == "/task/worker/:uid" {
+		uid, _ = app.readIntParam(c, "uid")
+		userType = "worker"
+		if uid == -1 {
+			app.BadRequest(c, ErrInvalidQuery)
+			return fmt.Errorf("invalid query")
+		}
+	}
+	fmt.Println(uid, "uid")
+
+	input := data.Filters{}
+
+	qs := c.Request().URL.Query()
+	input.Page = app.readIntQuery(qs, "page", 1)
+	input.PageSize = app.readIntQuery(qs, "page_size", 10)
+	input.Sort = app.readStringQuery(qs, "sort", "id")
+	input.SortSafelist = []string{"id", "name", "-id", "-name", "rating", "-rating", "price", "-price", "created_at", "-created_at", "expiry", "-expiry"}
+
+	res, metadata, err := app.models.Tasks.GetAllTasksOfUser(uid, userType, input)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+
+	return c.JSON(http.StatusOK, envelope{"metadata": metadata, "data": res})
+
 }

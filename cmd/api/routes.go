@@ -52,6 +52,8 @@ func (app *application) routes() *echo.Echo {
 	service := e.Group("/task", app.authenticate())
 	{
 		service.GET("", app.listAllTasksHandler)
+		service.GET("/user/:uid", app.listAllTasksOfUserHandler)
+		service.GET("/worker/:uid", app.listAllTasksOfUserHandler)
 		service.GET("/:id", app.getTaskHandler)
 		service.POST("", app.addNewTaskHandler)
 		service.DELETE("/:id", app.deleteTaskHandler)
