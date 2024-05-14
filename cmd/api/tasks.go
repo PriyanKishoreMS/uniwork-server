@@ -203,3 +203,18 @@ func (app *application) listAllTasksOfUserHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, envelope{"metadata": metadata, "data": res})
 
 }
+
+func (app *application) addNewTaskRequestHandler(c echo.Context) error {
+	qs := c.Request().URL.Query()
+	userId := app.readIntQuery(qs, "userid", 0)
+	taskId := app.readIntQuery(qs, "taskid", 0)
+
+	res, err := app.models.TaskRequests.CreateTaskRequest(userId, taskId)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+	RowsAffected, _ := res.RowsAffected()
+
+	return c.JSON(http.StatusOK, envelope{"Rows Affected": RowsAffected})
+}

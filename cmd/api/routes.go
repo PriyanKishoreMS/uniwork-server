@@ -57,6 +57,8 @@ func (app *application) routes() *echo.Echo {
 		service.GET("/:id", app.getTaskHandler)
 		service.POST("", app.addNewTaskHandler)
 		service.DELETE("/:id", app.deleteTaskHandler)
+
+		service.POST("/request", app.addNewTaskRequestHandler)
 	}
 
 	return e

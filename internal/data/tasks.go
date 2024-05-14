@@ -3,61 +3,15 @@ package data
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/lib/pq"
 )
 
-type Task struct {
-	ID          int64     `form:"id"`
-	UserID      int64     `form:"user_id" validate:"required"`
-	CollegeID   int64     `form:"college_id" validate:"required"`
-	Title       string    `form:"title" validate:"required"`
-	Description string    `form:"description"`
-	Category    string    `form:"category" validate:"required"`
-	Price       int64     `form:"price" validate:"required"`
-	Status      string    `form:"status" validate:"required"`
-	CreatedAt   time.Time `form:"time"`
-	Expiry      time.Time `form:"expiry" validate:"required"`
-	Images      []string  `form:"images,omitempty"`
-	Files       []string  `form:"files,omitempty"`
-}
-type GetTaskResponse struct {
-	ID          int64     `json:"id"`
-	UserID      int64     `json:"user_id"`
-	CollegeName string    `json:"college_name"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Category    string    `json:"category"`
-	Price       int64     `json:"price"`
-	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"time"`
-	Expiry      time.Time `json:"expiry"`
-	Images      []string  `json:"images,omitempty"`
-	Files       []string  `json:"files,omitempty"`
-	UserName    string    `json:"user_name"`
-	UserAvatar  string    `json:"user_avatar"`
-	UserRating  float64   `json:"user_rating"`
-}
-
-type TaskWithUser struct {
-	ID          int64     `json:"id"`
-	UserID      int64     `json:"user_id" validate:"required"`
-	CollegeID   int64     `json:"college_id" validate:"required"`
-	Title       string    `json:"title" validate:"required"`
-	Description string    `json:"description"`
-	Category    string    `json:"category" validate:"required"`
-	Price       int64     `json:"price" validate:"required"`
-	Status      string    `json:"status" validate:"required"`
-	CreatedAt   time.Time `json:"time"`
-	Expiry      time.Time `json:"expiry" validate:"required"`
-	Images      []string  `json:"images,omitempty"`
-	UserName    string    `json:"user_name"`
-	UserAvatar  string    `json:"user_avatar"`
-	UserRating  float64   `json:"user_rating"`
-}
-
 type TaskModel struct {
+	DB *sql.DB
+}
+
+type TaskRequestModel struct {
 	DB *sql.DB
 }
 
@@ -324,4 +278,34 @@ func (t TaskModel) GetAllTasksOfUser(id int64, userType string, filters Filters)
 	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
 
 	return tasks, metadata, nil
+}
+
+func (t TaskRequestModel) checkTaskRequest(userId, taskId int) (bool, error) {
+	query := `SELECT EXISTS(SELECT id FROM task_requests WHERE user_id=$1 AND task_id=$2)`
+
+	ctx, cancel := handlectx()
+	defer cancel()
+
+	var exists bool
+	err := t.DB.QueryRowContext(ctx, query, userId, taskId).Scan(&exists)
+	fmt.Println(exists, "This is res")
+	return exists, err
+}
+
+func (t TaskRequestModel) CreateTaskRequest(userId int, taskId int) (sql.Result, error) {
+	query := `INSERT INTO task_requests (task_id, user_id)
+	VALUES ($1, $2)`
+
+	ctx, cancel := handlectx()
+	defer cancel()
+
+	exists, err := t.checkTaskRequest(userId, taskId)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, fmt.Errorf("request already exists")
+	}
+
+	return t.DB.ExecContext(ctx, query, taskId, userId)
 }

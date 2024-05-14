@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     rating DECIMAL NOT NULL DEFAULT 0,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     version INT NOT NULL DEFAULT 1,
+    
     CONSTRAINT user_clg_fk FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE CASCADE
 );
 

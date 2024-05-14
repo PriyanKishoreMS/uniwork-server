@@ -10,14 +10,16 @@ import (
 type User struct {
 	ID             int64     `json:"id"`
 	CollegeID      int64     `json:"college_id"`
+	CollegeName    string    `json:"college_name"`
 	Name           string    `json:"name" validate:"required"`
 	Email          string    `json:"email,omitempty" validate:"required,email"`
 	Mobile         string    `json:"mobile,omitempty"`
 	Avatar         string    `json:"avatar,omitempty"`
 	Dept           string    `json:"dept" validate:"required"`
-	TasksCompleted int       `json:"tasks_completed,omitempty"`
-	Earned         int64     `json:"earned,omitempty"`
-	Rating         float64   `json:"rating,omitempty"`
+	TasksCompleted int       `json:"tasks_completed"`
+	Earned         int64     `json:"earned"`
+	Rating         float64   `json:"rating"`
+	Status         string    `json:"status"`
 	CreatedAt      time.Time `json:"created_at,omitempty"`
 	Version        int       `json:"version,omitempty"`
 }
@@ -47,9 +49,7 @@ func (u UserModel) Register(user *User) error {
 }
 
 func (u UserModel) Get(id int64) (*User, error) {
-	query := `SELECT id, college_id, name, email, mobile, dept, avatar, tasks_completed, earned, rating, created_at, version
-	FROM users
-	WHERE id=$1
+	query := `select users.id, users.college_id, users.name as user_name, users.email, users.avatar, users.dept, users.tasks_completed, users.earned, users.rating, colleges.name as college_name from users inner join colleges on colleges.id = users.college_id where users.id=$1;
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
@@ -61,14 +61,12 @@ func (u UserModel) Get(id int64) (*User, error) {
 		&user.CollegeID,
 		&user.Name,
 		&user.Email,
-		&user.Mobile,
-		&user.Dept,
 		&user.Avatar,
+		&user.Dept,
 		&user.TasksCompleted,
 		&user.Earned,
 		&user.Rating,
-		&user.CreatedAt,
-		&user.Version,
+		&user.CollegeName,
 	}
 
 	err := u.DB.QueryRowContext(ctx, query, id).Scan(dest...)
@@ -80,9 +78,7 @@ func (u UserModel) Get(id int64) (*User, error) {
 }
 
 func (u UserModel) GetUserByEmail(email string) (*User, error) {
-	query := `SELECT id, college_id, name, email, mobile, dept, avatar, tasks_completed, earned, rating, created_at, version
-	FROM users
-	WHERE email=$1
+	query := `select users.id, users.college_id, users.name as user_name, users.email, users.avatar, users.dept, users.tasks_completed, users.earned, users.rating, colleges.name as college_name from users inner join colleges on colleges.id = users.college_id where users.email=$1
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
@@ -94,14 +90,12 @@ func (u UserModel) GetUserByEmail(email string) (*User, error) {
 		&user.CollegeID,
 		&user.Name,
 		&user.Email,
-		&user.Mobile,
-		&user.Dept,
 		&user.Avatar,
+		&user.Dept,
 		&user.TasksCompleted,
 		&user.Earned,
 		&user.Rating,
-		&user.CreatedAt,
-		&user.Version,
+		&user.CollegeName,
 	}
 
 	err := u.DB.QueryRowContext(ctx, query, email).Scan(dest...)

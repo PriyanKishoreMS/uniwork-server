@@ -9,14 +9,16 @@ CREATE TABLE IF NOT EXISTS tasks (
     description TEXT,
     category VARCHAR(255) NOT NULL,
     price BIGINT,
-    status VARCHAR(255) NOT NULL,
+    -- status being open, assigned, completed
+    status VARCHAR(32) NOT NULL DEFAULT 'open',
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     expiry TIMESTAMP,
     images VARCHAR(512)[], 
     files VARCHAR(512)[], 
-    -- scope VARCHAR(10) NOT NULL DEFAULT 'college',
-    -- req_users BIGINT[] NOT NULL DEFAULT '{}',
+    -- scope being college, global
+    scope VARCHAR(10) NOT NULL DEFAULT 'college',
     version INT NOT NULL DEFAULT 1,
+    
     CONSTRAINT task_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT task_clg_fk FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE CASCADE
 );
