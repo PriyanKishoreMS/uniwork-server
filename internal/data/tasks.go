@@ -280,32 +280,35 @@ func (t TaskModel) GetAllTasksOfUser(id int64, userType string, filters Filters)
 	return tasks, metadata, nil
 }
 
-func (t TaskRequestModel) checkTaskRequest(userId, taskId int) (bool, error) {
-	query := `SELECT EXISTS(SELECT id FROM task_requests WHERE user_id=$1 AND task_id=$2)`
+// func (t TaskRequestModel) checkTaskRequest(userId, taskId int) (bool, error) {
+// 	query := `SELECT EXISTS(SELECT id FROM task_requests WHERE user_id=$1 AND task_id=$2)`
 
-	ctx, cancel := handlectx()
-	defer cancel()
+// 	ctx, cancel := handlectx()
+// 	defer cancel()
 
-	var exists bool
-	err := t.DB.QueryRowContext(ctx, query, userId, taskId).Scan(&exists)
-	fmt.Println(exists, "This is res")
-	return exists, err
-}
+// 	var exists bool
+// 	err := t.DB.QueryRowContext(ctx, query, userId, taskId).Scan(&exists)
+// 	fmt.Println(exists, "This is res")
+// 	return exists, err
+// }
 
 func (t TaskRequestModel) CreateTaskRequest(userId int, taskId int) (sql.Result, error) {
 	query := `INSERT INTO task_requests (task_id, user_id)
-	VALUES ($1, $2)`
+	VALUES ($1, $2)
+	ON CONFLICT(task_id, user_id) DO NOTHING
+	`
 
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	exists, err := t.checkTaskRequest(userId, taskId)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		return nil, fmt.Errorf("request already exists")
-	}
-
 	return t.DB.ExecContext(ctx, query, taskId, userId)
+}
+
+func (t TaskRequestModel) DeleteTaskRequest(userId, taskId int) (sql.Result, error) {
+	query := `DELETE FROM task_requests WHERE user_id=$1 AND task_id=$2`
+
+	ctx, cancel := handlectx()
+	defer cancel()
+
+	return t.DB.ExecContext(ctx, query, userId, taskId)
 }

@@ -37,5 +37,9 @@ delete {{host}}/task/2
 Authorization: Bearer {{accessToken}}
 
 ###
-post {{host}}/task/request?userid=1&taskid=4
+post {{host}}/task/request?userid=2&taskid=3
+Authorization: Bearer {{accessToken}}
+
+###
+delete {{host}}/task/request?userid=2&taskid=3
 Authorization: Bearer {{accessToken}}

@@ -3,7 +3,7 @@
 @accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjE5OTA3MjIuMTY2MTkwOSwiaWF0IjoxNzE0MjE0NzIyLjE2NjE5MDYsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIyIiwidHlwZSI6InJlZnJlc2gifQ.GpFPf79HP4aYjpMgvDEbnDvzb0_BHsG4xxITMj-4D6c
 @refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjE5OTA3MjIuMTY2MTkwOSwiaWF0IjoxNzE0MjE0NzIyLjE2NjE5MDYsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIyIiwidHlwZSI6InJlZnJlc2gifQ.GpFPf79HP4aYjpMgvDEbnDvzb0_BHsG4xxITMj-4D6c
 ###
-get {{host}}/user/2
+get {{host}}/user
 Authorization: Bearer {{accessToken}}
 
 ###

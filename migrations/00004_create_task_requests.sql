@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS task_requests (
     CONSTRAINT task_req_task_fk FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
     CONSTRAINT task_req_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+ALTER TABLE task_requests ADD CONSTRAINT task_requests_unique UNIQUE (task_id, user_id);
 -- +goose StatementEnd
 
 -- +goose Down

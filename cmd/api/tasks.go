@@ -218,3 +218,25 @@ func (app *application) addNewTaskRequestHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, envelope{"Rows Affected": RowsAffected})
 }
+
+func (app *application) removeTaskRequestHandler(c echo.Context) error {
+	qs := c.Request().URL.Query()
+	userId := app.readIntQuery(qs, "userid", 0)
+	taskId := app.readIntQuery(qs, "taskid", 0)
+
+	RequestedUser := app.contextGetUser(c)
+
+	if int64(userId) != RequestedUser.ID {
+		app.CustomErrorResponse(c, envelope{"unauthorized": "You are not authorized to delete this task request"}, http.StatusUnauthorized, ErrUserUnauthorized)
+		return ErrUserUnauthorized
+	}
+
+	res, err := app.models.TaskRequests.DeleteTaskRequest(userId, taskId)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+	RowsAffected, _ := res.RowsAffected()
+
+	return c.JSON(http.StatusOK, envelope{"Rows Affected": RowsAffected})
+}
