@@ -206,8 +206,8 @@ func (app *application) listAllTasksOfUserHandler(c echo.Context) error {
 
 func (app *application) addNewTaskRequestHandler(c echo.Context) error {
 	qs := c.Request().URL.Query()
-	userId := app.readIntQuery(qs, "userid", 0)
-	taskId := app.readIntQuery(qs, "taskid", 0)
+	userId := int64(app.readIntQuery(qs, "userid", 0))
+	taskId := int64(app.readIntQuery(qs, "taskid", 0))
 
 	res, err := app.models.TaskRequests.CreateTaskRequest(userId, taskId)
 	if err != nil {
@@ -221,8 +221,8 @@ func (app *application) addNewTaskRequestHandler(c echo.Context) error {
 
 func (app *application) removeTaskRequestHandler(c echo.Context) error {
 	qs := c.Request().URL.Query()
-	userId := app.readIntQuery(qs, "userid", 0)
-	taskId := app.readIntQuery(qs, "taskid", 0)
+	userId := int64(app.readIntQuery(qs, "userid", 0))
+	taskId := int64(app.readIntQuery(qs, "taskid", 0))
 
 	RequestedUser := app.contextGetUser(c)
 
@@ -239,4 +239,39 @@ func (app *application) removeTaskRequestHandler(c echo.Context) error {
 	RowsAffected, _ := res.RowsAffected()
 
 	return c.JSON(http.StatusOK, envelope{"Rows Affected": RowsAffected})
+}
+
+func (app *application) approveTaskRequestHandler(c echo.Context) error {
+	qs := c.Request().URL.Query()
+	userId := int64(app.readIntQuery(qs, "userid", 0))
+	taskId := int64(app.readIntQuery(qs, "taskid", 0))
+
+	requestedUser := app.contextGetUser(c)
+
+	taskOwner, taskVersion, err := app.models.Tasks.GetTaskOwner(taskId)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+
+	if requestedUser.ID != taskOwner {
+		app.CustomErrorResponse(c, envelope{"unauthorized": "You are not authorized to approve this task request"}, http.StatusUnauthorized, ErrUserUnauthorized)
+		return ErrUserUnauthorized
+	}
+
+	res, err := app.models.TaskRequests.ApproveTaskRequest(taskId, userId, taskVersion)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+
+	rowsAffected0, _ := res[0].RowsAffected()
+	rowsAffected1, _ := res[1].LastInsertId()
+	rowsAffected2, _ := res[2].RowsAffected()
+
+	return c.JSON(http.StatusOK, envelope{
+		"Task Rows Affected":            rowsAffected0,
+		"Aproved Task Request Affected": rowsAffected1,
+		"Task Request Rows Affected":    rowsAffected2,
+	})
 }

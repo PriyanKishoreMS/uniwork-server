@@ -1,7 +1,7 @@
 @host = http://localhost:3000
 
-@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjE5OTA3MjIuMTY2MTkwOSwiaWF0IjoxNzE0MjE0NzIyLjE2NjE5MDYsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIyIiwidHlwZSI6InJlZnJlc2gifQ.GpFPf79HP4aYjpMgvDEbnDvzb0_BHsG4xxITMj-4D6c
-@refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjE5OTA3MjIuMTY2MTkwOSwiaWF0IjoxNzE0MjE0NzIyLjE2NjE5MDYsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIyIiwidHlwZSI6InJlZnJlc2gifQ.GpFPf79HP4aYjpMgvDEbnDvzb0_BHsG4xxITMj-4D6c
+@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjM1NjUzNDMuMjA0NzkwNiwiaWF0IjoxNzE1Nzg5MzQzLjIwNDc5MDQsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMCIsInR5cGUiOiJyZWZyZXNoIn0.UpLh8Zhz6EvmWL3Nwcd-57hePBIQMzCGGBMBU-Y6UwA
+@refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjM1NjUzNDMuMjA0NzkwNiwiaWF0IjoxNzE1Nzg5MzQzLjIwNDc5MDQsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMCIsInR5cGUiOiJyZWZyZXNoIn0.UpLh8Zhz6EvmWL3Nwcd-57hePBIQMzCGGBMBU-Y6UwA
 
 ###
 post {{host}}/task
@@ -37,9 +37,13 @@ delete {{host}}/task/2
 Authorization: Bearer {{accessToken}}
 
 ###
-post {{host}}/task/request?userid=2&taskid=3
+post {{host}}/task/request?userid=5&taskid=4
 Authorization: Bearer {{accessToken}}
 
 ###
-delete {{host}}/task/request?userid=2&taskid=3
+delete {{host}}/task/request?userid=2&taskid=4
+Authorization: Bearer {{accessToken}}
+
+###
+patch {{host}}/task/request/approve?userid=5&taskid=4
 Authorization: Bearer {{accessToken}}

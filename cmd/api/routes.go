@@ -59,6 +59,7 @@ func (app *application) routes() *echo.Echo {
 		service.DELETE("/:id", app.deleteTaskHandler)
 
 		service.POST("/request", app.addNewTaskRequestHandler)
+		service.PATCH("/request/approve", app.approveTaskRequestHandler)
 		service.DELETE("/request", app.removeTaskRequestHandler)
 	}
 
