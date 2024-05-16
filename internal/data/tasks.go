@@ -11,10 +11,6 @@ type TaskModel struct {
 	DB *sql.DB
 }
 
-type TaskRequestModel struct {
-	DB *sql.DB
-}
-
 func (t TaskModel) Create(task *Task) error {
 	query := `
 	INSERT INTO tasks (user_id, college_id, title, description, category, price, status, expiry, images, files)
@@ -294,93 +290,4 @@ func (t TaskModel) GetAllTasksOfUser(id int64, userType string, filters Filters)
 	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
 
 	return tasks, metadata, nil
-}
-
-// func (t TaskRequestModel) checkTaskRequest(userId, taskId int) (bool, error) {
-// 	query := `SELECT EXISTS(SELECT id FROM task_requests WHERE user_id=$1 AND task_id=$2)`
-
-// 	ctx, cancel := handlectx()
-// 	defer cancel()
-
-// 	var exists bool
-// 	err := t.DB.QueryRowContext(ctx, query, userId, taskId).Scan(&exists)
-// 	fmt.Println(exists, "This is res")
-// 	return exists, err
-// }
-
-func (t TaskRequestModel) CreateTaskRequest(userId, taskId int64) (sql.Result, error) {
-	query := `INSERT INTO task_requests (task_id, user_id)
-	VALUES ($1, $2)
-	ON CONFLICT(task_id, user_id) DO NOTHING
-	`
-
-	ctx, cancel := handlectx()
-	defer cancel()
-
-	return t.DB.ExecContext(ctx, query, taskId, userId)
-}
-
-func (t TaskRequestModel) DeleteTaskRequest(userId, taskId int64) (sql.Result, error) {
-	query := `DELETE FROM task_requests WHERE user_id=$1 AND task_id=$2`
-
-	ctx, cancel := handlectx()
-	defer cancel()
-
-	return t.DB.ExecContext(ctx, query, userId, taskId)
-}
-
-func (t TaskRequestModel) ApproveTaskRequest(taskId, userId int64, taskVersion int) ([3]sql.Result, error) {
-	res := [3]sql.Result{}
-
-	ctx, cancel := handlectx()
-	defer cancel()
-
-	tx, err := t.DB.BeginTx(ctx, nil)
-	if err != nil {
-		return res, fmt.Errorf("could not begin transaction: %w", err)
-	}
-
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	fmt.Println(taskVersion, "version here")
-
-	query := `UPDATE tasks SET worker_id=$1, status='assigned', version=version+1 WHERE id=$2 AND version=$3`
-	result, err := tx.ExecContext(ctx, query, userId, taskId, taskVersion)
-	if err != nil {
-		tx.Rollback()
-		if err == sql.ErrNoRows {
-			return res, ErrEditConflict
-		}
-		return res, fmt.Errorf("could not update task: %w", err)
-	}
-
-	res[0] = result
-
-	query = `UPDATE task_requests SET status='approved', version=version+1 WHERE task_id=$1 AND user_id=$2`
-	result, err = tx.ExecContext(ctx, query, taskId, userId)
-	if err != nil {
-		tx.Rollback()
-		return res, fmt.Errorf("could not update task request: %w", err)
-	}
-
-	res[1] = result
-
-	query = `DELETE FROM task_requests WHERE task_id=$1 AND status <> 'approved'`
-	result, err = tx.ExecContext(ctx, query, taskId)
-	if err != nil {
-		tx.Rollback()
-		return res, fmt.Errorf("could not delete task request: %w", err)
-	}
-
-	res[2] = result
-
-	if err = tx.Commit(); err != nil {
-		return res, fmt.Errorf("could not commit task request approve transaction: %w", err)
-	}
-
-	return res, nil
 }

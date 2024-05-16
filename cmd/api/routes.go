@@ -60,6 +60,7 @@ func (app *application) routes() *echo.Echo {
 
 		service.POST("/request", app.addNewTaskRequestHandler)
 		service.PATCH("/request/approve", app.approveTaskRequestHandler)
+		service.PATCH("/request/reject", app.rejectTaskRequestHandler)
 		service.DELETE("/request", app.removeTaskRequestHandler)
 	}
 
