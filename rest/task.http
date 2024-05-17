@@ -17,7 +17,7 @@ Content-Type: multipart/form-data
 }
 
 ###
-get {{host}}/task
+get {{host}}/task/4
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -25,11 +25,11 @@ get {{host}}/task
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task/user/10
+get {{host}}/task/user/12
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task/worker/12
+get {{host}}/task/worker/2
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -37,7 +37,7 @@ delete {{host}}/task/2
 Authorization: Bearer {{accessToken}}
 
 ###
-post {{host}}/task/request?taskid=4&userid=5
+post {{host}}/task/request?taskid=4&userid=3
 Authorization: Bearer {{accessToken}}
 
 ###

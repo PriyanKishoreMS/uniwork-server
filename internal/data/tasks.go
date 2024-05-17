@@ -38,43 +38,53 @@ func (t TaskModel) Create(task *Task) error {
 
 }
 
-func (t TaskModel) GetTaskOwner(id int64) (int64, int, error) {
-	query := `SELECT user_id, version FROM tasks WHERE id=$1`
-
-	ctx, cancel := handlectx()
-	defer cancel()
-
-	var taskId int64
-	var version int
-	err := t.DB.QueryRowContext(ctx, query, id).Scan(&taskId, &version)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return taskId, version, err
-}
-
 func (t TaskModel) Get(id int64) (*GetTaskResponse, error) {
 	query := `SELECT
-  tasks.id,
-  tasks.user_id,
-  tasks.title,
-  tasks.description,
-  tasks.category,
-  tasks.price,
-  tasks.status,
-  tasks.created_at,
-  tasks.expiry,
-  tasks.images,
-  tasks.files,
-  users.name AS user_name,
-  users.avatar,
-  users.rating,
-  colleges.name AS college_name
+    tasks.id,
+    tasks.user_id,
+    tasks.title,
+    tasks.description,
+    tasks.category,
+    tasks.price,
+    tasks.status,
+    tasks.created_at,
+    tasks.expiry,
+    tasks.images,
+    tasks.files,
+    users.name AS user_name,
+    users.avatar,
+    users.rating,
+    colleges.name AS college_name,
+    json_agg(
+        json_build_object(
+			'id', task_requests.id,
+            'status', task_requests.status,
+            'name', requesters.name,
+            'avatar', requesters.avatar
+        )
+    ) AS requesters
 FROM tasks
 INNER JOIN users ON users.id = tasks.user_id
 INNER JOIN colleges ON colleges.id = tasks.college_id
-WHERE tasks.id = $1;
+LEFT JOIN task_requests ON task_requests.task_id = tasks.id
+LEFT JOIN users AS requesters ON requesters.id = task_requests.user_id
+WHERE tasks.id = $1
+GROUP BY
+    tasks.id,
+    tasks.user_id,
+    tasks.title,
+    tasks.description,
+    tasks.category,
+    tasks.price,
+    tasks.status,
+    tasks.created_at,
+    tasks.expiry,
+    tasks.images,
+    tasks.files,
+    users.name,
+    users.avatar,
+    users.rating,
+    colleges.name;;
 	`
 	ctx, cancel := handlectx()
 	defer cancel()
@@ -97,6 +107,7 @@ WHERE tasks.id = $1;
 		&task.UserAvatar,
 		&task.UserRating,
 		&task.CollegeName,
+		&task.Requesters,
 	}
 
 	err := t.DB.QueryRowContext(ctx, query, id).Scan(dest...)
@@ -105,6 +116,22 @@ WHERE tasks.id = $1;
 	}
 
 	return &task, nil
+}
+
+func (t TaskModel) GetTaskOwner(id int64) (int64, int, error) {
+	query := `SELECT user_id, version FROM tasks WHERE id=$1`
+
+	ctx, cancel := handlectx()
+	defer cancel()
+
+	var taskId int64
+	var version int
+	err := t.DB.QueryRowContext(ctx, query, id).Scan(&taskId, &version)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return taskId, version, err
 }
 
 func (t TaskModel) Delete(id int64) error {
@@ -232,7 +259,7 @@ func (t TaskModel) GetAllTasksOfUser(id int64, userType string, filters Filters)
 	FROM tasks
 	INNER JOIN users ON 
 	users.id=tasks.worker_id	
-	WHERE tasks.user_id=$1
+	WHERE tasks.worker_id=$1
 	ORDER BY %s %s, id ASC
 	LIMIT $2 OFFSET $3;
 	`, filters.sortColumn(), filters.sortDirection())

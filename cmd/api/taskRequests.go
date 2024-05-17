@@ -12,6 +12,14 @@ func (app *application) addNewTaskRequestHandler(c echo.Context) error {
 	userId := int64(app.readIntQuery(qs, "userid", 0))
 	taskId := int64(app.readIntQuery(qs, "taskid", 0))
 
+	// ! commented for ease of testing, uncomment before deployment
+	// requestedUser := app.contextGetUser(c)
+
+	// if requestedUser.ID != userId {
+	// 	app.CustomErrorResponse(c, envelope{"unauthorized": "You are not authorized to create this task request"}, http.StatusUnauthorized, ErrUserUnauthorized)
+	// 	return ErrUserUnauthorized
+	// }
+
 	approved, err := app.models.TaskRequests.CheckTaskRequestStatus(taskId)
 	if err != nil {
 		app.InternalServerError(c, fmt.Errorf("could not check task request status: %w", err))

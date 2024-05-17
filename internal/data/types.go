@@ -1,6 +1,9 @@
 package data
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // struct to add the task to db
 type Task struct {
@@ -18,23 +21,30 @@ type Task struct {
 	Files       []string  `form:"files,omitempty"`
 }
 
+//	type requester struct {
+//		RequestStatus   string `json:"request_status"`
+//		RequesterName   string `json:"requester_name"`
+//		RequesterAvatar string `json:"requester_avatar"`
+//	}
+
 // viewing details of single task
 type GetTaskResponse struct {
-	ID          int64     `json:"id"`
-	UserID      int64     `json:"user_id"`
-	CollegeName string    `json:"college_name"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Category    string    `json:"category"`
-	Price       int64     `json:"price"`
-	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"time"`
-	Expiry      time.Time `json:"expiry"`
-	Images      []string  `json:"images,omitempty"`
-	Files       []string  `json:"files,omitempty"`
-	UserName    string    `json:"user_name"`
-	UserAvatar  string    `json:"user_avatar"`
-	UserRating  float64   `json:"user_rating"`
+	ID          int64           `json:"id"`
+	UserID      int64           `json:"user_id"`
+	CollegeName string          `json:"college_name"`
+	Title       string          `json:"title"`
+	Description string          `json:"description"`
+	Category    string          `json:"category"`
+	Price       int64           `json:"price"`
+	Status      string          `json:"status"`
+	CreatedAt   time.Time       `json:"time"`
+	Expiry      time.Time       `json:"expiry"`
+	Images      []string        `json:"images,omitempty"`
+	Files       []string        `json:"files,omitempty"`
+	UserName    string          `json:"user_name"`
+	UserAvatar  string          `json:"user_avatar"`
+	UserRating  float64         `json:"user_rating"`
+	Requesters  json.RawMessage `json:"requesters,omitempty"`
 }
 
 // listing all the tasks in the home page
