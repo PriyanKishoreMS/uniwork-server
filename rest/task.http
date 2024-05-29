@@ -9,27 +9,26 @@ Authorization: Bearer {{accessToken}}
 Content-Type: multipart/form-data
 
 {
-    "title": "Printing problem pls help",
-    "description": "print this for review",
-    "category": "Document Printing",
-    "Price": 100,
-    "status": "open"
+    "title": "I need help in cleaning my house",
+    "description": "My house is very dirty and I need help in cleaning it",
+    "category": "Catering/Cooking",
+    "Price": 200,
 }
-
-###
-get {{host}}/task/4
-Authorization: Bearer {{accessToken}}
 
 ###
 get {{host}}/task
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task/user/12
+get {{host}}/task/4
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task/worker/2
+get {{host}}/task/user/2
+Authorization: Bearer {{accessToken}}
+
+###
+get {{host}}/task?page_size=10&page=1&sort=-updated_at
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -37,17 +36,17 @@ delete {{host}}/task/2
 Authorization: Bearer {{accessToken}}
 
 ###
-post {{host}}/task/request?taskid=4&userid=3
+post {{host}}/task/request/56/10
 Authorization: Bearer {{accessToken}}
 
 ###
-delete {{host}}/task/request?taskid=4&userid=5
+delete {{host}}/task/request/56/10
 Authorization: Bearer {{accessToken}}
 
 ###
-patch {{host}}/task/request/approve?taskid=3&userid=2
+patch {{host}}/task/request/approve/56/10
 Authorization: Bearer {{accessToken}}
 
 ###
-patch {{host}}/task/request/reject?taskid=4&userid=5
+patch {{host}}/task/request/reject/56/10
 Authorization: Bearer {{accessToken}}

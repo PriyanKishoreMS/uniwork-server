@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     -- status being open, assigned, completed
     status VARCHAR(32) NOT NULL DEFAULT 'open',
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     expiry TIMESTAMP,
     images VARCHAR(512)[], 
     files VARCHAR(512)[], 

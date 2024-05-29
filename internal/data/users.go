@@ -4,25 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 )
-
-type User struct {
-	ID             int64     `json:"id"`
-	CollegeID      int64     `json:"college_id"`
-	CollegeName    string    `json:"college_name"`
-	Name           string    `json:"name" validate:"required"`
-	Email          string    `json:"email,omitempty" validate:"required,email"`
-	Mobile         string    `json:"mobile,omitempty"`
-	Avatar         string    `json:"avatar,omitempty"`
-	Dept           string    `json:"dept" validate:"required"`
-	TasksCompleted int       `json:"tasks_completed"`
-	Earned         int64     `json:"earned"`
-	Rating         float64   `json:"rating"`
-	Status         string    `json:"status"`
-	CreatedAt      time.Time `json:"created_at,omitempty"`
-	Version        int       `json:"version,omitempty"`
-}
 
 type UserModel struct {
 	DB *sql.DB

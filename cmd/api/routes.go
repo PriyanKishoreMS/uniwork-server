@@ -58,10 +58,10 @@ func (app *application) routes() *echo.Echo {
 		service.POST("", app.addNewTaskHandler)
 		service.DELETE("/:id", app.deleteTaskHandler)
 
-		service.POST("/request", app.addNewTaskRequestHandler)
-		service.PATCH("/request/approve", app.approveTaskRequestHandler)
-		service.PATCH("/request/reject", app.rejectTaskRequestHandler)
-		service.DELETE("/request", app.removeTaskRequestHandler)
+		service.POST("/request/:taskid/:userid", app.addNewTaskRequestHandler)
+		service.PATCH("/request/approve/:taskid/:userid", app.approveTaskRequestHandler)
+		service.PATCH("/request/reject/:taskid/:userid", app.rejectTaskRequestHandler)
+		service.DELETE("/request/:taskid/:userid", app.removeTaskRequestHandler)
 	}
 
 	return e

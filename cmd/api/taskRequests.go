@@ -8,9 +8,14 @@ import (
 )
 
 func (app *application) addNewTaskRequestHandler(c echo.Context) error {
-	qs := c.Request().URL.Query()
-	userId := int64(app.readIntQuery(qs, "userid", 0))
-	taskId := int64(app.readIntQuery(qs, "taskid", 0))
+	userId, err1 := app.readIntParam(c, "userid")
+	taskId, err2 := app.readIntParam(c, "taskid")
+	if err1 != nil || err2 != nil {
+		app.BadRequest(c, fmt.Errorf("error reading form data: %w", err1))
+		return fmt.Errorf("error reading form data: %w", err1)
+	}
+
+	fmt.Println(userId, taskId, "userId, taskId")
 
 	// ! commented for ease of testing, uncomment before deployment
 	// requestedUser := app.contextGetUser(c)
@@ -42,9 +47,12 @@ func (app *application) addNewTaskRequestHandler(c echo.Context) error {
 }
 
 func (app *application) removeTaskRequestHandler(c echo.Context) error {
-	qs := c.Request().URL.Query()
-	userId := int64(app.readIntQuery(qs, "userid", 0))
-	taskId := int64(app.readIntQuery(qs, "taskid", 0))
+	userId, err1 := app.readIntParam(c, "userid")
+	taskId, err2 := app.readIntParam(c, "taskid")
+	if err1 != nil || err2 != nil {
+		app.BadRequest(c, fmt.Errorf("error reading form data: %w", err1))
+		return fmt.Errorf("error reading form data: %w", err1)
+	}
 
 	RequestedUser := app.contextGetUser(c)
 
@@ -64,9 +72,12 @@ func (app *application) removeTaskRequestHandler(c echo.Context) error {
 }
 
 func getQueryAuthorizeUser(c echo.Context, app *application) (int64, int64, int, error) {
-	qs := c.Request().URL.Query()
-	userId := int64(app.readIntQuery(qs, "userid", 0))
-	taskId := int64(app.readIntQuery(qs, "taskid", 0))
+	userId, err1 := app.readIntParam(c, "userid")
+	taskId, err2 := app.readIntParam(c, "taskid")
+	if err1 != nil || err2 != nil {
+		app.BadRequest(c, fmt.Errorf("error reading form data: %w", err1))
+		return 0, 0, 0, fmt.Errorf("error reading form data: %w", err1)
+	}
 
 	requestedUser := app.contextGetUser(c)
 

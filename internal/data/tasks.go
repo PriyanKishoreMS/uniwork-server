@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	"github.com/lib/pq"
@@ -55,14 +56,15 @@ func (t TaskModel) Get(id int64) (*GetTaskResponse, error) {
     users.avatar,
     users.rating,
     colleges.name AS college_name,
-    json_agg(
+    COALESCE (json_agg(
         json_build_object(
 			'id', task_requests.id,
+			'userid', task_requests.user_id,
             'status', task_requests.status,
             'name', requesters.name,
             'avatar', requesters.avatar
         )
-    ) AS requesters
+    ) FILTER (WHERE task_requests.id IS NOT NULL), '[]') AS requesters
 FROM tasks
 INNER JOIN users ON users.id = tasks.user_id
 INNER JOIN colleges ON colleges.id = tasks.college_id
@@ -113,6 +115,10 @@ GROUP BY
 	err := t.DB.QueryRowContext(ctx, query, id).Scan(dest...)
 	if err != nil {
 		return nil, err
+	}
+
+	if task.Requesters == nil {
+		task.Requesters = json.RawMessage("[]")
 	}
 
 	return &task, nil

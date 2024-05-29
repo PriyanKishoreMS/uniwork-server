@@ -128,7 +128,7 @@ func (app *application) listAllTasksHandler(c echo.Context) error {
 	input.Filters.PageSize = app.readIntQuery(qs, "page_size", 10)
 	input.Filters.Sort = app.readStringQuery(qs, "sort", "id")
 
-	input.Filters.SortSafelist = []string{"id", "name", "-id", "-name", "rating", "-rating", "price", "-price", "created_at", "-created_at", "expiry", "-expiry"}
+	input.Filters.SortSafelist = []string{"id", "name", "-id", "-name", "rating", "-rating", "price", "-price", "created_at", "-created_at", "updated_at", "-updated_at", "expiry", "-expiry"}
 	if input.Category == "All" {
 		input.Category = ""
 	}
@@ -192,7 +192,7 @@ func (app *application) listAllTasksOfUserHandler(c echo.Context) error {
 	input.Page = app.readIntQuery(qs, "page", 1)
 	input.PageSize = app.readIntQuery(qs, "page_size", 10)
 	input.Sort = app.readStringQuery(qs, "sort", "id")
-	input.SortSafelist = []string{"id", "name", "-id", "-name", "rating", "-rating", "price", "-price", "created_at", "-created_at", "expiry", "-expiry"}
+	input.SortSafelist = []string{"id", "name", "-id", "-name", "rating", "-rating", "price", "-price", "created_at", "-created_at", "updated_at", "-updated_at", "expiry", "-expiry"}
 
 	res, metadata, err := app.models.Tasks.GetAllTasksOfUser(uid, userType, input)
 	if err != nil {
@@ -203,4 +203,3 @@ func (app *application) listAllTasksOfUserHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, envelope{"metadata": metadata, "data": res})
 
 }
-

@@ -29,7 +29,7 @@ func (t TaskRequestModel) ApproveTaskRequest(taskId, userId int64, taskVersion i
 	fmt.Println(taskVersion, "version here")
 
 	query := `UPDATE tasks 
-	SET worker_id=$1, status='assigned', version=version+1 
+	SET worker_id=$1, status='assigned', version=version+1, updated_at=NOW() 
 	WHERE id=$2 AND version=$3`
 	result, err := tx.ExecContext(ctx, query, userId, taskId, taskVersion)
 	if err != nil {
@@ -72,8 +72,8 @@ func (t TaskRequestModel) ApproveTaskRequest(taskId, userId int64, taskVersion i
 
 func (t TaskRequestModel) RejectTaskRequest(taskId, userId int64) (sql.Result, error) {
 	query := `UPDATE task_requests 
-	SET status="rejected", version=version+1 
-	WHERE task_id=$1 AND user_id=$2 AND status="pending"`
+	SET status='rejected', version=version+1 
+	WHERE task_id=$1 AND user_id=$2 AND status='pending'`
 
 	ctx, cancel := handlectx()
 	defer cancel()
