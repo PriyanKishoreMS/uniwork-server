@@ -264,7 +264,7 @@ func (t TaskModel) GetAllTasksOfUser(id int64, userType string, filters Filters)
 	tasks.id, tasks.user_id, tasks.college_id, tasks.title, tasks.description, tasks.category, tasks.price, tasks.status, tasks.created_at, tasks.expiry, tasks.images, users.name, users.avatar, users.rating
 	FROM tasks
 	INNER JOIN users ON 
-	users.id=tasks.worker_id	
+	users.id=tasks.user_id	
 	WHERE tasks.worker_id=$1
 	ORDER BY %s %s, id ASC
 	LIMIT $2 OFFSET $3;

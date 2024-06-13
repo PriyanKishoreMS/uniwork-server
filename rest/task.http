@@ -24,7 +24,7 @@ get {{host}}/task/4
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task/user/2
+get {{host}}/task/worker/2
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -36,7 +36,7 @@ delete {{host}}/task/2
 Authorization: Bearer {{accessToken}}
 
 ###
-post {{host}}/task/request/56/10
+post {{host}}/task/request/58/2
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -44,7 +44,7 @@ delete {{host}}/task/request/56/10
 Authorization: Bearer {{accessToken}}
 
 ###
-patch {{host}}/task/request/approve/56/10
+patch {{host}}/task/request/approve/58/2
 Authorization: Bearer {{accessToken}}
 
 ###
