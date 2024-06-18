@@ -30,6 +30,7 @@ func (app *application) routes() *echo.Echo {
 	e.POST("/login", app.loginUserHandler)
 	e.POST("/security/refreshtoken", app.refreshTokenHandler)
 	e.Static("/public", uploadDir)
+	e.GET("/pay", app.checkPayementHander)
 
 	college := e.Group("/college", app.authenticate())
 	{

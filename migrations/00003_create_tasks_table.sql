@@ -9,15 +9,14 @@ CREATE TABLE IF NOT EXISTS tasks (
     description TEXT,
     category VARCHAR(255) NOT NULL,
     price BIGINT,
-    -- status being open, assigned, completed
-    status VARCHAR(32) NOT NULL DEFAULT 'open',
+    status VARCHAR(32) NOT NULL DEFAULT 'open', -- status being open, assigned, completed 
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     expiry TIMESTAMP,
     images VARCHAR(512)[], 
     files VARCHAR(512)[], 
-    -- scope being college, global
-    scope VARCHAR(10) NOT NULL DEFAULT 'college',
+    scope VARCHAR(10) NOT NULL DEFAULT 'college', -- scope being college, global
+    escrow_payment_id BIGINT,
     version INT NOT NULL DEFAULT 1,
     
     CONSTRAINT task_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
