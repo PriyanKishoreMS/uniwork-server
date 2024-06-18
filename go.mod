@@ -14,6 +14,7 @@ require (
 	github.com/labstack/gommon v0.4.2
 	github.com/lib/pq v1.10.9
 	github.com/pascaldekloe/jwt v1.12.0
+	github.com/razorpay/razorpay-go v1.3.2
 	golang.org/x/time v0.5.0
 	google.golang.org/api v0.163.0
 )

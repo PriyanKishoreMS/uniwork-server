@@ -13,6 +13,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/gommon/log"
 	"github.com/priyankishorems/uniwork-server/internal/data"
+	razorpay "github.com/razorpay/razorpay-go"
 )
 
 type Config struct {
@@ -36,6 +37,7 @@ type application struct {
 	// fb       data.FirebaseUtils
 	fcmClient *messaging.Client
 	awsS3     *data.S3
+	razor     *razorpay.Client
 	// wg       sync.WaitGroup
 }
 
@@ -71,6 +73,8 @@ func main() {
 		log.Fatalf("error in firebase util: %v", err)
 	}
 
+	razorClient := razorpay.NewClient(os.Getenv("RAZORPAY_KEY"), os.Getenv("RAZORPAY_SECRET"))
+
 	fcmClient, err := firebase.App.Messaging(context.Background())
 	if err != nil {
 		log.Fatalf("error in initializing fcmclient: %v", err)
@@ -88,6 +92,7 @@ func main() {
 		validate:  validate,
 		fcmClient: fcmClient,
 		awsS3:     data.NewS3(client),
+		razor:     razorClient,
 	}
 	e := app.routes()
 	e.Server.ReadTimeout = time.Second * 10
