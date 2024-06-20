@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/priyankishorems/uniwork-server/internal/data"
@@ -28,7 +27,6 @@ func (app *application) addNewTaskHandler(c echo.Context) error {
 
 	input.UserID = user.ID
 	input.CollegeID = user.CollegeID
-	input.Expiry = time.Now().Add(time.Hour * 24)
 
 	err = app.validate.Struct(input)
 	if err != nil {

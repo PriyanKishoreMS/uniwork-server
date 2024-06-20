@@ -33,7 +33,7 @@ type Task struct {
 	Price       int64     `form:"price" validate:"required"`
 	Status      string    `form:"status" validate:"required"`
 	CreatedAt   time.Time `form:"time"`
-	Expiry      time.Time `form:"expiry" validate:"required"`
+	Expiry      string    `form:"expiry" validate:"required"`
 	Images      []string  `form:"images,omitempty"`
 	Files       []string  `form:"files,omitempty"`
 }

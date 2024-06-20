@@ -52,4 +52,7 @@ patch {{host}}/task/request/reject/56/10
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/pay
+post {{host}}/pay
+
+###
+get {{host}}/check
