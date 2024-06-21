@@ -117,3 +117,40 @@ func (t TaskRequestModel) DeleteTaskRequest(userId, taskId int64) (sql.Result, e
 
 	return t.DB.ExecContext(ctx, query, userId, taskId)
 }
+
+type checkoutData struct {
+	TaskId        int64  `json:"task_id"`
+	WorkerId      int64  `json:"worker_id" `
+	Title         string `json:"title" `
+	Category      string `json:"category" `
+	Price         int64  `json:"price" `
+	CreatedAt     string `json:"created_at" `
+	Expiry        string `json:"expiry" `
+	WorkerName    string `json:"worker_name" `
+	WorkerCollege string `json:"worker_college" `
+	WorkerAvatar  string `json:"worker_avatar" `
+}
+
+func (t TaskRequestModel) GetCheckoutTaskRequest(userId, taskId int64) (*checkoutData, error) {
+	query := `SELECT t.id, t.title, t.category, t.price, t.created_at, t.expiry, u.id, u.name, c.name, u.avatar
+	FROM tasks t
+	JOIN users u ON u.id = $1 AND t.id=$2
+	JOIN colleges c ON c.id = u.college_id;
+	`
+
+	ctx, cancel := handlectx()
+	defer cancel()
+
+	row := t.DB.QueryRowContext(ctx, query, userId, taskId)
+
+	var data checkoutData
+
+	err := row.Scan(&data.TaskId, &data.Title, &data.Category, &data.Price, &data.CreatedAt, &data.Expiry, &data.WorkerId, &data.WorkerName, &data.WorkerCollege, &data.WorkerAvatar)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &data, nil
+
+}

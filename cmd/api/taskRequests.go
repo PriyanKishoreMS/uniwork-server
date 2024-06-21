@@ -86,14 +86,32 @@ func getQueryAuthorizeUser(c echo.Context, app *application) (int64, int64, int,
 		app.InternalServerError(c, err)
 		return 0, 0, 0, err
 	}
+	fmt.Println(taskOwner, requestedUser.ID, "taskOwner, taskVersion")
 
 	if requestedUser.ID != taskOwner {
-		app.CustomErrorResponse(c, envelope{"unauthorized": "You are not authorized to approve this task request"}, http.StatusUnauthorized, ErrUserUnauthorized)
+		app.CustomErrorResponse(c, envelope{"unauthorized": "You are not authorized this task request"}, http.StatusUnauthorized, ErrUserUnauthorized)
 		return 0, 0, 0, ErrUserUnauthorized
 
 	}
 
 	return taskId, userId, taskVersion, nil
+}
+
+// dormant
+func (app *application) CheckoutTaskRequestHandler(c echo.Context) error {
+	taskId, userId, _, err := getQueryAuthorizeUser(c, app)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+
+	res, err := app.models.TaskRequests.GetCheckoutTaskRequest(userId, taskId)
+	if err != nil {
+		app.InternalServerError(c, err)
+		return err
+	}
+
+	return c.JSON(http.StatusOK, res)
 }
 
 func (app *application) approveTaskRequestHandler(c echo.Context) error {

@@ -56,13 +56,14 @@ func (t TaskModel) Get(id int64) (*GetTaskResponse, error) {
     users.avatar,
     users.rating,
     colleges.name AS college_name,
-    COALESCE (json_agg(
+    COALESCE(json_agg(
         json_build_object(
-			'id', task_requests.id,
-			'userid', task_requests.user_id,
+            'id', task_requests.id,
+            'userid', task_requests.user_id,
             'status', task_requests.status,
             'name', requesters.name,
-            'avatar', requesters.avatar
+            'avatar', requesters.avatar,
+            'college_name', requester_colleges.name
         )
     ) FILTER (WHERE task_requests.id IS NOT NULL), '[]') AS requesters
 FROM tasks
@@ -70,6 +71,7 @@ INNER JOIN users ON users.id = tasks.user_id
 INNER JOIN colleges ON colleges.id = tasks.college_id
 LEFT JOIN task_requests ON task_requests.task_id = tasks.id
 LEFT JOIN users AS requesters ON requesters.id = task_requests.user_id
+LEFT JOIN colleges AS requester_colleges ON requester_colleges.id = requesters.college_id
 WHERE tasks.id = $1
 GROUP BY
     tasks.id,
@@ -86,7 +88,7 @@ GROUP BY
     users.name,
     users.avatar,
     users.rating,
-    colleges.name;;
+    colleges.name;
 	`
 	ctx, cancel := handlectx()
 	defer cancel()

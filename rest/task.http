@@ -1,6 +1,6 @@
 @host = http://localhost:3000
 
-@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjM1NjUzNDMuMjA0NzkwNiwiaWF0IjoxNzE1Nzg5MzQzLjIwNDc5MDQsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMCIsInR5cGUiOiJyZWZyZXNoIn0.UpLh8Zhz6EvmWL3Nwcd-57hePBIQMzCGGBMBU-Y6UwA
+@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTkwNTYwMzQuODY1MDUyNSwiaWF0IjoxNzE4OTY5NjM0Ljg2NTA1MjIsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMiIsInR5cGUiOiJhY2Nlc3MifQ.4gslVJMpB_2Mut5Y72VhtfLxVGG404SKLmETup0JBNM 
 @refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjM1NjUzNDMuMjA0NzkwNiwiaWF0IjoxNzE1Nzg5MzQzLjIwNDc5MDQsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMCIsInR5cGUiOiJyZWZyZXNoIn0.UpLh8Zhz6EvmWL3Nwcd-57hePBIQMzCGGBMBU-Y6UwA
 
 ###
@@ -20,7 +20,7 @@ get {{host}}/task
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task/4
+get {{host}}/task/66
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -36,7 +36,7 @@ delete {{host}}/task/2
 Authorization: Bearer {{accessToken}}
 
 ###
-post {{host}}/task/request/58/2
+post {{host}}/task/request/57/1
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -49,6 +49,10 @@ Authorization: Bearer {{accessToken}}
 
 ###
 patch {{host}}/task/request/reject/56/10
+Authorization: Bearer {{accessToken}}
+
+###
+get {{host}}/task/request/checkout/66/2
 Authorization: Bearer {{accessToken}}
 
 ###
