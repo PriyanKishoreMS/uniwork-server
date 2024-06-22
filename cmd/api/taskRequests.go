@@ -71,25 +71,22 @@ func (app *application) removeTaskRequestHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, envelope{"Rows Affected": RowsAffected})
 }
 
-func getQueryAuthorizeUser(c echo.Context, app *application) (int64, int64, int, error) {
+func (app *application) GetQueryAuthorizeUser(c echo.Context) (int64, int64, int, error) {
 	userId, err1 := app.readIntParam(c, "userid")
 	taskId, err2 := app.readIntParam(c, "taskid")
 	if err1 != nil || err2 != nil {
-		app.BadRequest(c, fmt.Errorf("error reading form data: %w", err1))
 		return 0, 0, 0, fmt.Errorf("error reading form data: %w", err1)
 	}
 
 	requestedUser := app.contextGetUser(c)
 
-	taskOwner, taskVersion, err := app.models.Tasks.GetTaskOwner(taskId)
+	taskOwner, _, taskVersion, err := app.models.Tasks.GetTaskForVerification(taskId)
 	if err != nil {
-		app.InternalServerError(c, err)
 		return 0, 0, 0, err
 	}
 	fmt.Println(taskOwner, requestedUser.ID, "taskOwner, taskVersion")
 
 	if requestedUser.ID != taskOwner {
-		app.CustomErrorResponse(c, envelope{"unauthorized": "You are not authorized this task request"}, http.StatusUnauthorized, ErrUserUnauthorized)
 		return 0, 0, 0, ErrUserUnauthorized
 
 	}
@@ -99,7 +96,7 @@ func getQueryAuthorizeUser(c echo.Context, app *application) (int64, int64, int,
 
 // dormant
 func (app *application) CheckoutTaskRequestHandler(c echo.Context) error {
-	taskId, userId, _, err := getQueryAuthorizeUser(c, app)
+	taskId, userId, _, err := app.GetQueryAuthorizeUser(c)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
@@ -116,7 +113,7 @@ func (app *application) CheckoutTaskRequestHandler(c echo.Context) error {
 
 func (app *application) approveTaskRequestHandler(c echo.Context) error {
 
-	taskId, userId, taskVersion, err := getQueryAuthorizeUser(c, app)
+	taskId, userId, taskVersion, err := app.GetQueryAuthorizeUser(c)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
@@ -141,7 +138,7 @@ func (app *application) approveTaskRequestHandler(c echo.Context) error {
 
 func (app *application) rejectTaskRequestHandler(c echo.Context) error {
 
-	taskId, userId, _, err := getQueryAuthorizeUser(c, app)
+	taskId, userId, _, err := app.GetQueryAuthorizeUser(c)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err

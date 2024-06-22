@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     images VARCHAR(512)[], 
     files VARCHAR(512)[], 
     scope VARCHAR(10) NOT NULL DEFAULT 'college', -- scope being college, global
-    escrow_payment_id BIGINT,
+    payment_id BIGINT,
     version INT NOT NULL DEFAULT 1,
     
     CONSTRAINT task_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

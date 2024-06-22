@@ -96,3 +96,11 @@ type TaskRequest struct {
 	UserID int64  `json:"user_id" validate:"required"`
 	Status Status `json:"status"`
 }
+
+type OrderData struct {
+	OrderID     string
+	TaskID      int64
+	WorkerID    int64
+	TaskOwnerID int64
+	Amount      int64
+}

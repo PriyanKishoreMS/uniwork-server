@@ -30,7 +30,7 @@ func (app *application) routes() *echo.Echo {
 	e.POST("/login", app.loginUserHandler)
 	e.POST("/security/refreshtoken", app.refreshTokenHandler)
 	e.Static("/public", uploadDir)
-	e.POST("/pay", app.createPaymentHandler)
+	e.POST("/pay", app.createOrderHandler)
 	e.GET("/check", app.checkPayementHandler)
 
 	college := e.Group("/college", app.authenticate())
@@ -61,7 +61,7 @@ func (app *application) routes() *echo.Echo {
 		service.DELETE("/:id", app.deleteTaskHandler)
 
 		service.POST("/request/:taskid/:userid", app.addNewTaskRequestHandler)
-		// service.GET("/request/checkout/:taskid/:userid", app.checkoutTaskRequestHandler)
+		// service.GET("/request/checkout/:taskid/:userid", app.CheckoutTaskRequestHandler)
 		service.PATCH("/request/approve/:taskid/:userid", app.approveTaskRequestHandler)
 		service.PATCH("/request/reject/:taskid/:userid", app.rejectTaskRequestHandler)
 		service.DELETE("/request/:taskid/:userid", app.removeTaskRequestHandler)

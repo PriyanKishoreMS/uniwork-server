@@ -36,7 +36,7 @@ delete {{host}}/task/2
 Authorization: Bearer {{accessToken}}
 
 ###
-post {{host}}/task/request/57/1
+post {{host}}/task/request/57/2
 Authorization: Bearer {{accessToken}}
 
 ###

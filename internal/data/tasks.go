@@ -126,20 +126,21 @@ GROUP BY
 	return &task, nil
 }
 
-func (t TaskModel) GetTaskOwner(id int64) (int64, int, error) {
-	query := `SELECT user_id, version FROM tasks WHERE id=$1`
+func (t TaskModel) GetTaskForVerification(id int64) (int64, int64, int, error) {
+	query := `SELECT user_id, price, version FROM tasks WHERE id=$1`
 
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	var taskId int64
+	var taskOwner int64
+	var price int64
 	var version int
-	err := t.DB.QueryRowContext(ctx, query, id).Scan(&taskId, &version)
+	err := t.DB.QueryRowContext(ctx, query, id).Scan(&taskOwner, &price, &version)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 
-	return taskId, version, err
+	return taskOwner, price, version, err
 }
 
 func (t TaskModel) Delete(id int64) error {

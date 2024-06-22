@@ -41,6 +41,7 @@ type Models struct {
 	Users        UserModel
 	Colleges     CollegeModel
 	FcmTokens    FcmModel
+	Payments     PaymentModel
 }
 
 func NewModel(db *sql.DB) Models {
@@ -50,5 +51,6 @@ func NewModel(db *sql.DB) Models {
 		Users:        UserModel{DB: db},
 		Colleges:     CollegeModel{DB: db},
 		FcmTokens:    FcmModel{DB: db},
+		Payments:     PaymentModel{DB: db},
 	}
 }
