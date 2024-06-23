@@ -59,7 +59,7 @@ func (t TaskModel) Get(id int64) (*GetTaskResponse, error) {
     COALESCE(json_agg(
         json_build_object(
             'id', task_requests.id,
-            'userid', task_requests.user_id,
+            'userid', task_requests.task_worker_id,
             'status', task_requests.status,
             'name', requesters.name,
             'avatar', requesters.avatar,
@@ -70,7 +70,7 @@ FROM tasks
 INNER JOIN users ON users.id = tasks.user_id
 INNER JOIN colleges ON colleges.id = tasks.college_id
 LEFT JOIN task_requests ON task_requests.task_id = tasks.id
-LEFT JOIN users AS requesters ON requesters.id = task_requests.user_id
+LEFT JOIN users AS requesters ON requesters.id = task_requests.task_worker_id
 LEFT JOIN colleges AS requester_colleges ON requester_colleges.id = requesters.college_id
 WHERE tasks.id = $1
 GROUP BY
@@ -126,21 +126,20 @@ GROUP BY
 	return &task, nil
 }
 
-func (t TaskModel) GetTaskForVerification(id int64) (int64, int64, int, error) {
-	query := `SELECT user_id, price, version FROM tasks WHERE id=$1`
+func (t TaskModel) GetTaskForVerification(id int64) (int64, int, error) {
+	query := `SELECT user_id, version FROM tasks WHERE id=$1`
 
 	ctx, cancel := handlectx()
 	defer cancel()
 
 	var taskOwner int64
-	var price int64
 	var version int
-	err := t.DB.QueryRowContext(ctx, query, id).Scan(&taskOwner, &price, &version)
+	err := t.DB.QueryRowContext(ctx, query, id).Scan(&taskOwner, &version)
 	if err != nil {
-		return 0, 0, 0, err
+		return 0, 0, err
 	}
 
-	return taskOwner, price, version, err
+	return taskOwner, version, err
 }
 
 func (t TaskModel) Delete(id int64) error {

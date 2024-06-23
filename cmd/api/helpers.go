@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -201,4 +203,11 @@ func (app *application) HandleFiles(c echo.Context, key string, userID int64, co
 		}
 	}
 	return filePaths, nil
+}
+
+func generateSignature(orderId, razorpayPaymentId, secret string) string {
+	data := orderId + "|" + razorpayPaymentId
+	h := hmac.New(sha256.New, []byte(secret))
+	h.Write([]byte(data))
+	return hex.EncodeToString(h.Sum(nil))
 }

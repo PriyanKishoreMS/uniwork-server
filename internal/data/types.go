@@ -98,9 +98,8 @@ type TaskRequest struct {
 }
 
 type OrderData struct {
-	OrderID     string
-	TaskID      int64
-	WorkerID    int64
-	TaskOwnerID int64
-	Amount      int64
+	OrderID       string
+	TaskOwnerID   int64
+	Amount        int64
+	TaskRequestID int64
 }

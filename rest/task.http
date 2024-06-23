@@ -1,6 +1,6 @@
 @host = http://localhost:3000
 
-@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTkwNTYwMzQuODY1MDUyNSwiaWF0IjoxNzE4OTY5NjM0Ljg2NTA1MjIsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMiIsInR5cGUiOiJhY2Nlc3MifQ.4gslVJMpB_2Mut5Y72VhtfLxVGG404SKLmETup0JBNM 
+@accessToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjM1NjUzNDMuMjA0NzkwNiwiaWF0IjoxNzE1Nzg5MzQzLjIwNDc5MDQsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMCIsInR5cGUiOiJyZWZyZXNoIn0.UpLh8Zhz6EvmWL3Nwcd-57hePBIQMzCGGBMBU-Y6UwA
 @refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MjM1NjUzNDMuMjA0NzkwNiwiaWF0IjoxNzE1Nzg5MzQzLjIwNDc5MDQsImlzcyI6ImdpdGh1Yi5jb20vcHJpeWFua2lzaG9yZW1zL3VuaXdvcmsiLCJzdWIiOiIxMCIsInR5cGUiOiJyZWZyZXNoIn0.UpLh8Zhz6EvmWL3Nwcd-57hePBIQMzCGGBMBU-Y6UwA
 
 ###
@@ -20,7 +20,7 @@ get {{host}}/task
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task/66
+get {{host}}/task/56
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -36,7 +36,7 @@ delete {{host}}/task/2
 Authorization: Bearer {{accessToken}}
 
 ###
-post {{host}}/task/request/57/2
+post {{host}}/task/request/66/10
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -44,19 +44,27 @@ delete {{host}}/task/request/56/10
 Authorization: Bearer {{accessToken}}
 
 ###
-patch {{host}}/task/request/approve/58/2
+patch {{host}}/task/request/approve/56/2
 Authorization: Bearer {{accessToken}}
 
 ###
-patch {{host}}/task/request/reject/56/10
+patch {{host}}/task/request/reject/56/2
 Authorization: Bearer {{accessToken}}
 
 ###
-get {{host}}/task/request/checkout/66/2
+get {{host}}/task/request/checkout/56/2
 Authorization: Bearer {{accessToken}}
 
 ###
 post {{host}}/pay
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "task_id": 56,
+    "task_request_id": 1,
+    "amount": 500
+}
 
 ###
 get {{host}}/check

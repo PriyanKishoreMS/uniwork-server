@@ -9,7 +9,7 @@ type TaskRequestModel struct {
 	DB *sql.DB
 }
 
-func (t TaskRequestModel) ApproveTaskRequest(taskId, userId int64, taskVersion int) ([3]sql.Result, error) {
+func (t TaskRequestModel) ApproveTaskRequest(taskId, taskWorkerId int64, taskVersion int) ([3]sql.Result, error) {
 	res := [3]sql.Result{}
 
 	ctx, cancel := handlectx()
@@ -31,7 +31,7 @@ func (t TaskRequestModel) ApproveTaskRequest(taskId, userId int64, taskVersion i
 	query := `UPDATE tasks 
 	SET worker_id=$1, status='assigned', version=version+1, updated_at=NOW() 
 	WHERE id=$2 AND version=$3`
-	result, err := tx.ExecContext(ctx, query, userId, taskId, taskVersion)
+	result, err := tx.ExecContext(ctx, query, taskWorkerId, taskId, taskVersion)
 	if err != nil {
 		tx.Rollback()
 		if err == sql.ErrNoRows {
@@ -44,8 +44,8 @@ func (t TaskRequestModel) ApproveTaskRequest(taskId, userId int64, taskVersion i
 
 	query = `UPDATE task_requests 
 	SET status='approved', version=version+1 
-	WHERE task_id=$1 AND user_id=$2`
-	result, err = tx.ExecContext(ctx, query, taskId, userId)
+	WHERE id=$1`
+	result, err = tx.ExecContext(ctx, query, taskId, taskWorkerId)
 	if err != nil {
 		tx.Rollback()
 		return res, fmt.Errorf("could not update task request: %w", err)
@@ -70,15 +70,15 @@ func (t TaskRequestModel) ApproveTaskRequest(taskId, userId int64, taskVersion i
 	return res, nil
 }
 
-func (t TaskRequestModel) RejectTaskRequest(taskId, userId int64) (sql.Result, error) {
+func (t TaskRequestModel) RejectTaskRequest(taskId, taskWorkerId int64) (sql.Result, error) {
 	query := `UPDATE task_requests 
 	SET status='rejected', version=version+1 
-	WHERE task_id=$1 AND user_id=$2 AND status='pending'`
+	WHERE task_id=$1 AND task_worker_id=$2 AND status='pending'`
 
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	res, err := t.DB.ExecContext(ctx, query, taskId, userId)
+	res, err := t.DB.ExecContext(ctx, query, taskId, taskWorkerId)
 	if err != nil {
 		return nil, err
 	}
@@ -97,25 +97,25 @@ func (t TaskRequestModel) CheckTaskRequestStatus(taskId int64) (bool, error) {
 	return exists, err
 }
 
-func (t TaskRequestModel) CreateTaskRequest(userId, taskId int64) (sql.Result, error) {
-	query := `INSERT INTO task_requests (task_id, user_id)
+func (t TaskRequestModel) CreateTaskRequest(taskWorkerId, taskId int64) (sql.Result, error) {
+	query := `INSERT INTO task_requests (task_id, task_worker_id)
 	VALUES ($1, $2)
-	ON CONFLICT(task_id, user_id) DO NOTHING
+	ON CONFLICT(task_id, task_worker_id) DO NOTHING
 	`
 
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	return t.DB.ExecContext(ctx, query, taskId, userId)
+	return t.DB.ExecContext(ctx, query, taskId, taskWorkerId)
 }
 
-func (t TaskRequestModel) DeleteTaskRequest(userId, taskId int64) (sql.Result, error) {
-	query := `DELETE FROM task_requests WHERE user_id=$1 AND task_id=$2 AND status='pending'`
+func (t TaskRequestModel) DeleteTaskRequest(taskWorkerId, taskId int64) (sql.Result, error) {
+	query := `DELETE FROM task_requests WHERE task_worker_id=$1 AND task_id=$2 AND status='pending'`
 
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	return t.DB.ExecContext(ctx, query, userId, taskId)
+	return t.DB.ExecContext(ctx, query, taskWorkerId, taskId)
 }
 
 type checkoutData struct {
@@ -131,7 +131,7 @@ type checkoutData struct {
 	WorkerAvatar  string `json:"worker_avatar" `
 }
 
-func (t TaskRequestModel) GetCheckoutTaskRequest(userId, taskId int64) (*checkoutData, error) {
+func (t TaskRequestModel) GetCheckoutTaskRequest(taskWorkerId, taskId int64) (*checkoutData, error) {
 	query := `SELECT t.id, t.title, t.category, t.price, t.created_at, t.expiry, u.id, u.name, c.name, u.avatar
 	FROM tasks t
 	JOIN users u ON u.id = $1 AND t.id=$2
@@ -141,7 +141,7 @@ func (t TaskRequestModel) GetCheckoutTaskRequest(userId, taskId int64) (*checkou
 	ctx, cancel := handlectx()
 	defer cancel()
 
-	row := t.DB.QueryRowContext(ctx, query, userId, taskId)
+	row := t.DB.QueryRowContext(ctx, query, taskWorkerId, taskId)
 
 	var data checkoutData
 
@@ -153,4 +153,22 @@ func (t TaskRequestModel) GetCheckoutTaskRequest(userId, taskId int64) (*checkou
 
 	return &data, nil
 
+}
+
+func (t TaskRequestModel) OrderCreationCheck(taskRequestId int64) (int64, int64, int64, error) {
+	query := `SELECT t.user_id, t.price, tr.task_id 
+	FROM tasks t JOIN task_requests tr ON t.id = tr.task_id 
+	WHERE tr.id=$1 AND tr.status='pending'
+	`
+
+	ctx, cancel := handlectx()
+	defer cancel()
+
+	var taskOwnerId, price, taskId int64
+	err := t.DB.QueryRowContext(ctx, query, taskRequestId).Scan(&taskOwnerId, &price, &taskId)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("error reading task request data: %w", err)
+	}
+
+	return taskOwnerId, price, taskId, nil
 }

@@ -8,19 +8,19 @@ import (
 )
 
 func (app *application) addNewTaskRequestHandler(c echo.Context) error {
-	userId, err1 := app.readIntParam(c, "userid")
+	taskWorkerId, err1 := app.readIntParam(c, "userid")
 	taskId, err2 := app.readIntParam(c, "taskid")
 	if err1 != nil || err2 != nil {
 		app.BadRequest(c, fmt.Errorf("error reading form data: %w", err1))
 		return fmt.Errorf("error reading form data: %w", err1)
 	}
 
-	fmt.Println(userId, taskId, "userId, taskId")
+	fmt.Println(taskWorkerId, taskId, "taskWorkerId, taskId")
 
 	// ! commented for ease of testing, uncomment before deployment
 	// requestedUser := app.contextGetUser(c)
 
-	// if requestedUser.ID != userId {
+	// if requestedUser.ID != taskWorkerId {
 	// 	app.CustomErrorResponse(c, envelope{"unauthorized": "You are not authorized to create this task request"}, http.StatusUnauthorized, ErrUserUnauthorized)
 	// 	return ErrUserUnauthorized
 	// }
@@ -36,7 +36,7 @@ func (app *application) addNewTaskRequestHandler(c echo.Context) error {
 		return fmt.Errorf("task already assigned")
 	}
 
-	res, err := app.models.TaskRequests.CreateTaskRequest(userId, taskId)
+	res, err := app.models.TaskRequests.CreateTaskRequest(taskWorkerId, taskId)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
@@ -47,7 +47,7 @@ func (app *application) addNewTaskRequestHandler(c echo.Context) error {
 }
 
 func (app *application) removeTaskRequestHandler(c echo.Context) error {
-	userId, err1 := app.readIntParam(c, "userid")
+	taskWorkerId, err1 := app.readIntParam(c, "userid")
 	taskId, err2 := app.readIntParam(c, "taskid")
 	if err1 != nil || err2 != nil {
 		app.BadRequest(c, fmt.Errorf("error reading form data: %w", err1))
@@ -56,12 +56,12 @@ func (app *application) removeTaskRequestHandler(c echo.Context) error {
 
 	RequestedUser := app.contextGetUser(c)
 
-	if int64(userId) != RequestedUser.ID {
+	if int64(taskWorkerId) != RequestedUser.ID {
 		app.CustomErrorResponse(c, envelope{"unauthorized": "You are not authorized to delete this task request"}, http.StatusUnauthorized, ErrUserUnauthorized)
 		return ErrUserUnauthorized
 	}
 
-	res, err := app.models.TaskRequests.DeleteTaskRequest(userId, taskId)
+	res, err := app.models.TaskRequests.DeleteTaskRequest(taskWorkerId, taskId)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
@@ -72,7 +72,7 @@ func (app *application) removeTaskRequestHandler(c echo.Context) error {
 }
 
 func (app *application) GetQueryAuthorizeUser(c echo.Context) (int64, int64, int, error) {
-	userId, err1 := app.readIntParam(c, "userid")
+	taskWorkerId, err1 := app.readIntParam(c, "userid")
 	taskId, err2 := app.readIntParam(c, "taskid")
 	if err1 != nil || err2 != nil {
 		return 0, 0, 0, fmt.Errorf("error reading form data: %w", err1)
@@ -80,7 +80,7 @@ func (app *application) GetQueryAuthorizeUser(c echo.Context) (int64, int64, int
 
 	requestedUser := app.contextGetUser(c)
 
-	taskOwner, _, taskVersion, err := app.models.Tasks.GetTaskForVerification(taskId)
+	taskOwner, taskVersion, err := app.models.Tasks.GetTaskForVerification(taskId)
 	if err != nil {
 		return 0, 0, 0, err
 	}
@@ -91,18 +91,18 @@ func (app *application) GetQueryAuthorizeUser(c echo.Context) (int64, int64, int
 
 	}
 
-	return taskId, userId, taskVersion, nil
+	return taskId, taskWorkerId, taskVersion, nil
 }
 
 // dormant
 func (app *application) CheckoutTaskRequestHandler(c echo.Context) error {
-	taskId, userId, _, err := app.GetQueryAuthorizeUser(c)
+	taskId, taskWorkerId, _, err := app.GetQueryAuthorizeUser(c)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
-	res, err := app.models.TaskRequests.GetCheckoutTaskRequest(userId, taskId)
+	res, err := app.models.TaskRequests.GetCheckoutTaskRequest(taskWorkerId, taskId)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
@@ -113,13 +113,13 @@ func (app *application) CheckoutTaskRequestHandler(c echo.Context) error {
 
 func (app *application) approveTaskRequestHandler(c echo.Context) error {
 
-	taskId, userId, taskVersion, err := app.GetQueryAuthorizeUser(c)
+	taskId, taskWorkerId, taskVersion, err := app.GetQueryAuthorizeUser(c)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
-	res, err := app.models.TaskRequests.ApproveTaskRequest(taskId, userId, taskVersion)
+	res, err := app.models.TaskRequests.ApproveTaskRequest(taskId, taskWorkerId, taskVersion)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
@@ -138,13 +138,13 @@ func (app *application) approveTaskRequestHandler(c echo.Context) error {
 
 func (app *application) rejectTaskRequestHandler(c echo.Context) error {
 
-	taskId, userId, _, err := app.GetQueryAuthorizeUser(c)
+	taskId, taskWorkerId, _, err := app.GetQueryAuthorizeUser(c)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
 	}
 
-	res, err := app.models.TaskRequests.RejectTaskRequest(taskId, userId)
+	res, err := app.models.TaskRequests.RejectTaskRequest(taskId, taskWorkerId)
 	if err != nil {
 		app.InternalServerError(c, err)
 		return err
